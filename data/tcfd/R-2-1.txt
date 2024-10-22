@@ -1,0 +1,3 @@
+R-2-1
+描述氣候相關風險的管理流程，例如公司如何做出減緩、轉移、承受或控制這些風險 的決定。 此外，描述對氣候相關風險進行重大性排序的流程，包括公司內如何認定重大性。
+ Organizations should describe their processes for managing climate-related risks, including how they make decisions to mitigate, transfer, accept, or control those risks. In addition, organizations should describe their processes for prioritizing climate-related risks, including how materiality determinations are made within their organizations.

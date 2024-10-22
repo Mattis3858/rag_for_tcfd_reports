@@ -1,0 +1,3 @@
+MT-2-1
+適度的揭露範疇一、範疇二和範疇三的溫室氣體排放和相關風險。溫室氣體排放應按 照溫室氣體盤查議定書（GHG Protocol）規定的方法計算，以便於不同公司和地區的彙總和 比較。
+ Organizations should provide their Scope 1 and Scope 2 GHG emissions independent of a materiality assessment, and, if appropriate, Scope 3 GHG emissions and the related risks. All organizations should consider disclosing Scope 3 GHG emissions. GHG emissions should be calculated in line with the GHG Protocol methodology to allow for aggregation and comparability across organizations and jurisdictions.

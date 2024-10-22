@@ -1,0 +1,3 @@
+#MT-1-8 Supplemental Guidance for Banks
+銀行應描述其貸款和其他金融中介業務活動在相關情況下與低於 2°C 情境的一致程度，並使用最適合其組織背景或能力的方法或指標。同時，銀行還應指出包含哪些金融中介業務活動（例如，向特定行業或行業的貸款）在內。
+Banks should describe the extent to which their lending and other financial intermediary business activities, where relevant, are aligned with a well below 2°C scenario, using whichever approach or metrics best suit their organizational context or capabilities.Banks should also indicate which financial intermediary business activities (e.g., loans to specific sectors or industries) are included.

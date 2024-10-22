@@ -1,0 +1,3 @@
+MT-3-1
+公司應描述其符合預期要求或市場規範或其他目標的關鍵氣候目標，例如與溫室氣體 排放、用水量、能源使用量等有關的目標；其他目標可以包括效率或財務目標、財務損失容 忍度、整個產品週期減少的溫室氣體排放量，或為低碳經濟設計的產品和服務的淨營收目標。
+ Organizations should describe their key climate-related targets such as those related to GHG emissions, water usage, energy usage, etc., in line with the cross-industry, climaterelated metric categories in Table A2.1 (p. 79), where relevant, and in line with anticipated regulatory requirements or market constraints or other goals. Other goals may include efficiency or financial goals, financial loss tolerances, avoided GHG emissions through the entire product life cycle, or net revenue goals for products and services designed for a low-carbon economy.

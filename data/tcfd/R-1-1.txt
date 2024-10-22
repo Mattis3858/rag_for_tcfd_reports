@@ -1,0 +1,3 @@
+R-1-1
+描述鑑別和評估氣候相關風險的流程，該流程包括如何認定氣候相關風險，以及相對 於其他風險的重要性是重要的。
+ Organizations should describe their risk management processes for identifying and assessing climate-related risks. An important aspect of this description is how organizations determine the relative significance of climate-related risks in relation to other risks.

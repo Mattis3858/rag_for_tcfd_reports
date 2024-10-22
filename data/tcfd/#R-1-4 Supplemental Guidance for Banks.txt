@@ -1,0 +1,3 @@
+#R-1-4 Supplemental Guidance for Banks
+銀行應考慮將其與氣候相關的風險納入傳統銀行業風險類別的範疇中，例如信用風險、市場風險、流動性風險和運營風險。
+Banks should consider characterizing their climate-related risks in the context of traditional banking industry risk categories such as credit risk, market risk, liquidity risk, and operational risk. 

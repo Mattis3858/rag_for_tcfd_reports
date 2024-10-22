@@ -1,0 +1,3 @@
+S-3-3
+描述實體與轉型的情境，建議可參考公開來源的情境（實體如 IPCC RCP8.5，轉型如 IEA SDS）
+ Refer to Section D (Scenario Analysis and Climate-Related Issues) in the Task Force’s report for information on applying scenarios to forward-looking analysis

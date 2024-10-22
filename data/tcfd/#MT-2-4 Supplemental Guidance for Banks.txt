@@ -1,0 +1,3 @@
+#MT-2-4 Supplemental Guidance for Banks
+銀行應根據合作夥伴碳會計金融（PCAF）標準制定的全球溫室氣體（GHG）會計和報告標準，或類似的方法論，在數據和方法允許的情況下，披露其貸款和其他金融中介業務活動的溫室氣體排放。
+Banks should disclose GHG emissions for their lending and other financial intermediary business activities where data and methodologies allow. These emissions should be calculated in line with the Global GHG Accounting and Reporting Standard for the Financial Industry developed by the Partnership for Carbon Accounting Financials (PCAF Standard) or a comparable methodology (See Table 2, p. 50)

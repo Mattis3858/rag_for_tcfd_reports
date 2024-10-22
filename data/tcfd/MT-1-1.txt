@@ -1,0 +1,3 @@
+MT-1-1
+提供公司衡量和管理氣候相關風險與機會時所使用的關鍵指標。若相關且適用，公司 應考量業務相關之水、能源、土地使用權和廢棄物管理有關的氣候相關風險指標。
+ Organizations should provide the key metrics used to measure and manage climaterelated risks and opportunities, as described in Tables A1.1 and A1.2 (pp. 75–76), as well as metrics consistent with the cross-industry, climate-related metric categories described in Table A2.1 (p. 79). Organizations should consider including metrics on climate-related risks associated with water, energy, land use, and waste management where relevant and applicable.

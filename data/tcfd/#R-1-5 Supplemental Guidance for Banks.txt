@@ -1,0 +1,3 @@
+#R-1-5 Supplemental Guidance for Banks
+銀行也應考慮描述其使用的任何風險分類框架（例如，增強披露工作小組制定的「主要風險和新興風險」框架）。
+Banks should also consider describing any risk classification frameworks used (e.g., the Enhanced Disclosure Task Force’s framework for defining “Top and Emerging Risks”).

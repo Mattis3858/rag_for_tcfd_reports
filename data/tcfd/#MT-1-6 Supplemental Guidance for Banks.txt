@@ -1,0 +1,12 @@
+#MT-1-6 Supplemental Guidance for Banks
+根據氣候相關財務揭露工作小組（TCFD）對銀行之補充指引，銀行應提供用於評估氣候相關風險（轉型及實體風險）對貸款和其他金融中介業務活動的短期、中期和長期影響的指標。指標可能與信用暴險、股權及債務持有或頭寸交易有關，指標可依下述進行細分：
+‒ 行業
+‒ 地理
+‒ 信用品質（例如，投資等級或非投資等級、內部評級系統）
+‒ 平均期限
+Banks should provide the metrics used to assess the impact of (transition and physical) climate-related risks on their lending and other financial intermediary business activities in the short, medium, and long term. Metrics provided may relate to credit exposure, equity and debt holdings, or trading positions, broken down by:
+‒ Industry
+‒ Geography
+‒ Credit quality (e.g., investment grade or non-investment grade, internal rating
+system)
+‒ Average tenor

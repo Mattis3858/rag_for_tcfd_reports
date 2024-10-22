@@ -1,0 +1,3 @@
+MT-3-4
+如果其計算目標和計量的方法並不易鑑別，公司應予以描述。
+ Where not apparent, organizations should provide a description of the methodologies used to calculate targets and measures.

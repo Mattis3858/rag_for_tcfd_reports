@@ -1,0 +1,3 @@
+MT-1-4
+應提供歷史期間的指標以進行趨勢分析；另外，如果其計算或估算氣候指標的方法不 易鑑別，公司應予以描述。
+ Metrics should be provided for historical periods to allow for trend analysis. Where appropriate, organizations should consider providing forward-looking metrics for the cross-industry, climate-related metric categories described in Table A2.1 (p. 79), consistent with their business or strategic planning time horizons. In addition, where not apparent, organizations should provide a description of the methodologies used to calculate or estimate climate-related metrics.

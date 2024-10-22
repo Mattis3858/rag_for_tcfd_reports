@@ -1,0 +1,9 @@
+S-2-2
+評估氣候相關風險與機會對下列領域的財務規劃影響： 
+ ● 營業成本和營業收入 (TCFD中文版 .P18)
+ ● 資本支出及資本配置 (TCFD中文版 .P18)
+ ● 收購及資產分割
+ ● 資本的取得
+ Organizations should consider including the impact on their financial planning in the following areas:
+ ‒ Acquisitions or divestments
+ ‒ Access to capital

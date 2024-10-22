@@ -1,0 +1,3 @@
+S-1-1
+描述公司短、中、長期的氣候相關風險與機會，考量公司資產或基礎設施的使用壽命， 以及中、長期對公司與供應鏈潛在的氣候相關風險與機會。
+ a description of what they consider to be the relevant short-, medium-, and longterm time horizons, taking into consideration the useful life of the organization’s assets or infrastructure and the fact that climate-related issues often manifest themselves over the medium and longer terms

@@ -1,0 +1,3 @@
+MT-2-3
+提供歷史上溫室氣體排放量及相關指標，以進行趨勢分析。（如果其計算或估算氣候指 標的方法並不易鑑別，公司應予以描述。）
+ GHG emissions and associated metrics should be provided for historical periods to allow for trend analysis. In addition, where not apparent, organizations should provide a description of the methodologies used to calculate or estimate the metrics.
