@@ -1,29 +1,24 @@
-from langchain_openai import OpenAIEmbeddings
-from langchain.evaluation import load_evaluator
-from dotenv import load_dotenv
-import openai
-import os
+from transformers import AutoTokenizer, AutoModel
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
 
-# Load environment variables. Assumes that project contains .env file with API keys
-load_dotenv()
-#---- Set OpenAI API key 
-# Change environment variable name from "OPENAI_API_KEY" to the name given in 
-# your .env file.
-openai.api_key = os.environ['OPENAI_API_KEY']
+# Load Hugging Face BERT model and tokenizer for embeddings
+tokenizer = AutoTokenizer.from_pretrained("bert-base-chinese")
+model = AutoModel.from_pretrained("bert-base-chinese")
+
+def generate_embeddings(text: str):
+    inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=512)
+    outputs = model(**inputs)
+    return outputs.last_hidden_state.mean(dim=1).detach().numpy()
 
 def main():
-    # Get embedding for a word.
-    embedding_function = OpenAIEmbeddings()
-    vector = embedding_function.embed_query("apple")
-    print(f"Vector for 'apple': {vector}")
-    print(f"Vector length: {len(vector)}")
+    # Generate embedding for two words
+    vector1 = generate_embeddings("apple")
+    vector2 = generate_embeddings("iphone")
 
-    # Compare vector of two words
-    evaluator = load_evaluator("pairwise_embedding_distance")
-    words = ("apple", "iphone")
-    x = evaluator.evaluate_string_pairs(prediction=words[0], prediction_b=words[1])
-    print(f"Comparing ({words[0]}, {words[1]}): {x}")
-
+    # Calculate cosine similarity
+    similarity = cosine_similarity(vector1, vector2)[0][0]
+    print(f"Cosine similarity between 'apple' and 'iphone': {similarity}")
 
 if __name__ == "__main__":
     main()
