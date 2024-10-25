@@ -1,7 +1,9 @@
 from langchain_community.document_loaders import DirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document
-from langchain.embeddings.huggingface import HuggingFaceEmbeddings
+#from langchain.embeddings.huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
+import filetype
 from langchain_community.vectorstores import Chroma
 from transformers import AutoTokenizer, AutoModel
 import os
@@ -57,10 +59,19 @@ def generate_data_store():
     chunks = split_text(documents)
     save_to_chroma(chunks)
 
+# def load_documents():
+#     loader = DirectoryLoader(DATA_PATH, glob="*.txt")
+#     documents = loader.load()
+#     return documents
 def load_documents():
-    loader = DirectoryLoader(DATA_PATH, glob="*.txt")
-    documents = loader.load()
+    documents = []
+    for filename in os.listdir(DATA_PATH):
+        if filename.endswith(".txt"):
+            with open(os.path.join(DATA_PATH, filename), "r", encoding="utf-8") as file:
+                content = file.read()
+                documents.append(Document(page_content=content, metadata={"filename": filename}))
     return documents
+
 
 def split_text(documents: list[Document]):
     text_splitter = RecursiveCharacterTextSplitter(
