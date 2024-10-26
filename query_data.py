@@ -52,9 +52,9 @@ def main():
         print("Unable to find matching results.")
         return
 
-    # Check the similarity threshold
-    if all(score < 0.2 for _, score in results):
-        print("No relevant content found.")
+    # # Check the similarity threshold
+    # if all(score < 0.2 for _, score in results):
+    #     print("No relevant content found.")
     else:
         # Format and display the results
         context_text = "\n\n---\n\n".join([doc.page_content for doc, _ in results])
