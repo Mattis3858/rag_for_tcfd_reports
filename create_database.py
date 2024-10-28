@@ -1,75 +1,46 @@
 from langchain_community.document_loaders import DirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document
-#from langchain.embeddings.huggingface import HuggingFaceEmbeddings
-from langchain_community.embeddings import HuggingFaceEmbeddings
-import filetype
+# from langchain.embeddings import OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
-from transformers import AutoTokenizer, AutoModel
+import openai 
+from dotenv import load_dotenv
 import os
 import shutil
 import pandas as pd
 
-# Constants
-EXCEL_FILE_PATH = 'data/tcfd/銀行業名稱_年份_TCFD判讀(報告書_網頁).xlsx'
+# Load environment variables. Assumes that project contains .env file with API keys
+load_dotenv()
+#---- Set OpenAI API key 
+# Change environment variable name from "OPENAI_API_KEY" to the name given in 
+# your .env file.
+openai.api_key = os.environ['OPENAI_API_KEY']
+
 CHROMA_PATH = "chroma"
-DATA_PATH = "data/tcfd"  # Directory to store extracted text files
+EXCEL_PATH = "data/tcfd接露指引.xlsx"
 
-# Hugging Face Model for Embeddings
-tokenizer = AutoTokenizer.from_pretrained("bert-base-chinese")
-model = AutoModel.from_pretrained("bert-base-chinese")
-
-def generate_embeddings(text: str):
-    inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=512)
-    outputs = model(**inputs)
-    return outputs.last_hidden_state.mean(dim=1).detach().numpy()
-
-def create_huggingface_embeddings():
-    return HuggingFaceEmbeddings(model_name="bert-base-chinese")
 
 def main():
-    extract_and_save_guidelines()
     generate_data_store()
 
-def extract_and_save_guidelines():
-    # Load the Excel file and process the '判讀結果' sheet
-    xls = pd.ExcelFile(EXCEL_FILE_PATH)
-    df_judgment = pd.read_excel(xls, sheet_name='判讀結果')
-    
-    # Extract rows that contain third-level guidelines from 'Unnamed: 2'
-    third_layer_df = df_judgment[df_judgment['Unnamed: 2'].notna() & df_judgment['Unnamed: 2'].str.startswith(('G-', 'S-', 'R-', 'MT-', '#'))]
-    
-    # Save each guideline into a text file in the output directory
-    if not os.path.exists(DATA_PATH):
-        os.makedirs(DATA_PATH)
-
-    for index, row in third_layer_df.iterrows():
-        guideline_code = row['Unnamed: 2'].split('\n')[0]  # Extract the guideline code (e.g., G-1-1, S-1-1, etc.)
-        content = row['Unnamed: 2']  # Full content for the guideline
-        file_path = os.path.join(DATA_PATH, f"{guideline_code}.txt")
-        
-        # Save the content into a text file
-        with open(file_path, 'w', encoding='utf-8') as file:
-            file.write(content)
-
-    print(f"Extracted and saved {len(third_layer_df)} guidelines to {DATA_PATH}.")
 
 def generate_data_store():
-    documents = load_documents()
+    documents = load_documents_from_excel()
     chunks = split_text(documents)
     save_to_chroma(chunks)
 
-# def load_documents():
-#     loader = DirectoryLoader(DATA_PATH, glob="*.txt")
-#     documents = loader.load()
-#     return documents
-def load_documents():
+
+def load_documents_from_excel():
+    # Load the Excel file and create Document objects for each row
+    df = pd.read_excel(EXCEL_PATH)
+    
     documents = []
-    for filename in os.listdir(DATA_PATH):
-        if filename.endswith(".txt"):
-            with open(os.path.join(DATA_PATH, filename), "r", encoding="utf-8") as file:
-                content = file.read()
-                documents.append(Document(page_content=content, metadata={"filename": filename}))
+    for _, row in df.iterrows():
+        text = row['第三層(TCFD) 揭露指引']  # 使用實際的文字欄位名稱
+        metadata = {'類別': row['類別']} 
+        documents.append(Document(page_content=text, metadata=metadata))
+        
     return documents
 
 
@@ -82,21 +53,26 @@ def split_text(documents: list[Document]):
     )
     chunks = text_splitter.split_documents(documents)
     print(f"Split {len(documents)} documents into {len(chunks)} chunks.")
+
+    document = chunks[10] if len(chunks) > 10 else chunks[0]
+    print(document.page_content)
+    print(document.metadata)
+
     return chunks
+
 
 def save_to_chroma(chunks: list[Document]):
     # Clear out the database first.
     if os.path.exists(CHROMA_PATH):
         shutil.rmtree(CHROMA_PATH)
 
-    # Create a new DB from the documents using Hugging Face embeddings
-    hf_embeddings = create_huggingface_embeddings()
-    
+    # Create a new DB from the documents.
     db = Chroma.from_documents(
-        chunks, hf_embeddings, persist_directory=CHROMA_PATH
+        chunks, OpenAIEmbeddings(), persist_directory=CHROMA_PATH
     )
     db.persist()
     print(f"Saved {len(chunks)} chunks to {CHROMA_PATH}.")
+
 
 if __name__ == "__main__":
     main()
