@@ -11,26 +11,25 @@ from langchain.vectorstores import Chroma
 load_dotenv()
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
-# 定義檔案路徑與設定
-PDF_PATH = "C:\\Users\\bugee\\OneDrive\\桌面\\RAG\\rag_for_tcfd_reports\\data\\tcfd_report_pdf\\2801_彰化銀行_2022_TCFD_報告書.pdf"
+# 定義設定
 BASE_CHROMA_PATH = "chroma_tcfd"
 CHUNK_SIZE = 300
 CHUNK_OVERLAP = 100
 
-def main():
+def process_pdf(pdf_path):
     # 使用報告書檔案名稱作為子資料夾名稱
-    pdf_name = os.path.splitext(os.path.basename(PDF_PATH))[0]
+    pdf_name = os.path.splitext(os.path.basename(pdf_path))[0]
     chroma_path = os.path.join(BASE_CHROMA_PATH, pdf_name)
 
     # 載入並將 PDF 分割成塊狀
-    loader = PyPDFLoader(PDF_PATH)
+    loader = PyPDFLoader(pdf_path)
     text_splitter = RecursiveCharacterTextSplitter(
         separators="\n",
         chunk_size=CHUNK_SIZE,
         chunk_overlap=CHUNK_OVERLAP
     )
     documents = loader.load_and_split(text_splitter)
-    print(f"分割後的塊數量：{len(documents)}")
+    print(f"{pdf_name} 分割後的塊數量：{len(documents)}")
 
     # 如果已存在該報告書的 ChromaDB 資料夾，則清除並重新建立
     if os.path.exists(chroma_path):
@@ -43,7 +42,19 @@ def main():
         persist_directory=chroma_path
     )
     db.persist()
-    print(f"ChromaDB 已建立並儲存至 '{chroma_path}'，包含 {len(documents)} 個塊狀內容。")
+    print(f"{pdf_name} 的 ChromaDB 已建立並儲存至 '{chroma_path}'")
+
+def main():
+    pdf_paths = [
+        "C:\\Users\\bugee\\OneDrive\\桌面\\RAG\\rag_for_tcfd_reports\\data\\tcfd_5report_pdf\\2801_彰化銀行_2022_TCFD_報告書.pdf",
+        "C:\\Users\\bugee\\OneDrive\\桌面\\RAG\\rag_for_tcfd_reports\\data\\tcfd_5report_pdf\\2807_渣打銀行_2022_TCFD_報告書.pdf",
+        "C:\\Users\\bugee\\OneDrive\\桌面\\RAG\\rag_for_tcfd_reports\\data\\tcfd_5report_pdf\\2834_台灣企銀_2022_TCFD_報告書.pdf",
+        "C:\\Users\\bugee\\OneDrive\\桌面\\RAG\\rag_for_tcfd_reports\\data\\tcfd_5report_pdf\\2836_高雄銀行_2022_TCFD_報告書.pdf",
+        "C:\\Users\\bugee\\OneDrive\\桌面\\RAG\\rag_for_tcfd_reports\\data\\tcfd_5report_pdf\\2837_凱基銀行_2022_TCFD_報告書.pdf"
+    ]
+    
+    for pdf_path in pdf_paths:
+        process_pdf(pdf_path)
 
 if __name__ == "__main__":
     main()

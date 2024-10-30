@@ -8,9 +8,9 @@ from langchain.vectorstores import Chroma
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 
-# 設定文件路徑與 ChromaDB 的資料夾路徑
+# 設定文件路徑與 ChromaDB 的基礎資料夾路徑
 EXCEL_PATH = "C:\\Users\\bugee\\OneDrive\\桌面\\RAG\\rag_for_tcfd_reports\\data\\tcfd接露指引.xlsx"
-CHROMA_PATH = "chroma_tcfd"
+BASE_CHROMA_PATH = "chroma_tcfd"
 OUTPUT_PATH = "C:\\Users\\bugee\\OneDrive\\桌面\\RAG\\rag_for_tcfd_reports\\data\\label_result"
 
 # 確保輸出目錄存在
@@ -26,10 +26,10 @@ def load_documents_from_excel():
         documents.append((text, metadata))
     return documents
 
-def query_text(query_text, pointer_name):
-    # 查詢 ChromaDB 並返回匹配的類別
+def query_text(query_text, pointer_name, chroma_path):
+    # 查詢指定 ChromaDB 並返回匹配的類別
     embedding_function = OpenAIEmbeddings()
-    db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding_function)
+    db = Chroma(persist_directory=chroma_path, embedding_function=embedding_function)
     
     results = db.similarity_search_with_relevance_scores(query_text, k=100)
     filtered_results = [result for result in results if result[1] >= 0.8]
@@ -39,15 +39,14 @@ def query_text(query_text, pointer_name):
     for doc, score in filtered_results:
         result_data.append({
             "指標名稱": pointer_name,
-            # "類別": doc.metadata.get('類別', 'Unknown'),
             "相似度": score,
             "片段內容": doc.page_content
         })
     
     return result_data
 
-def main():
-    # 從 Excel 中載入文件
+def process_report(report_name):
+    chroma_path = os.path.join(BASE_CHROMA_PATH, report_name)
     documents = load_documents_from_excel()
     all_results = []
 
@@ -57,15 +56,26 @@ def main():
         query = f'此報告書是否揭露 "{pointer_name}"? "{pointer_name}" 定義如下：{definition}'
 
         # 執行相似度查詢並收集結果
-        print(f"查詢指標：{pointer_name}")
-        result_data = query_text(query, pointer_name)
+        result_data = query_text(query, pointer_name, chroma_path)
         all_results.extend(result_data)
 
-    # 將所有結果儲存到 CSV 檔案
+    # 將每份報告書的結果儲存到單獨的 CSV 檔案
+    output_csv_path = os.path.join(OUTPUT_PATH, f"label_result_{report_name}.csv")
     output_df = pd.DataFrame(all_results)
-    output_csv_path = os.path.join(OUTPUT_PATH, "label_result.csv")
     output_df.to_csv(output_csv_path, index=False, encoding="utf-8-sig")
     print(f"結果已儲存到：{output_csv_path}")
+
+def main():
+    report_names = [
+        "2801_彰化銀行_2022_TCFD_報告書",
+        "2807_渣打銀行_2022_TCFD_報告書",
+        "2834_台灣企銀_2022_TCFD_報告書",
+        "2836_高雄銀行_2022_TCFD_報告書",
+        "2837_凱基銀行_2022_TCFD_報告書"
+    ]
+    
+    for report_name in report_names:
+        process_report(report_name)
 
 if __name__ == "__main__":
     main()
