@@ -4,5 +4,5 @@ chroma_*
 chroma
 .DS_Store
 /venv
-/__pycache__
 .env
+/myenv.env
