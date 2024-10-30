@@ -18,6 +18,16 @@ report_files = [
     ("2837_凱基銀行_2022_TCFD_報告書", "label_result_2837_凱基銀行_2022_TCFD_報告書.csv")
 ]
 
+# 定義固定的 47 個標籤
+fixed_labels = [
+    "G-1-1", "G-1-2", "G-1-3", "G-2-1", "G-2-2", "G-2-3", "G-2-4",
+    "MT-1-1", "MT-1-2", "MT-1-3", "MT-1-4", "MT-1-5", "#MT-1-6", "#MT-1-7", "#MT-1-8",
+    "MT-2-1", "MT-2-2", "MT-2-3", "#MT-2-4", "MT-3-1", "MT-3-2", "MT-3-3", "MT-3-4",
+    "R-1-1", "R-1-2", "R-1-3", "#R-1-4", "#R-1-5", "R-2-1", "R-2-2", "R-2-3",
+    "R-3-1", "R-3-2", "S-1-1", "S-1-2", "S-1-3", "S-1-4", "#S-1-5", "S-2-1", 
+    "S-2-2", "S-2-3", "S-2-4", "S-2-5", "S-2-6", "S-3-1", "S-3-2", "S-3-3"
+]
+
 def load_data(label_result_path, merge_data_df, target_filename):
     # 從 target_filename 中提取「銀行 + 年份」
     extracted_filename = target_filename.split('_')[1] + target_filename.split('_')[2][:4]  # 如 "彰化銀行2022"
@@ -26,29 +36,38 @@ def load_data(label_result_path, merge_data_df, target_filename):
     label_result_df = pd.read_csv(label_result_path)
     target_row = merge_data_df[merge_data_df['filename'] == extracted_filename].iloc[0]
     
-    # 提取人工標籤
-    true_labels = target_row[target_row == 1].index.tolist()
+    # 建立真實標籤列表
+    true_labels = target_row[fixed_labels].tolist()  # 取出對應 filename 的 row 並取得固定標籤的值
     
-    # 提取模型預測的標籤
-    predicted_labels = label_result_df['指標名稱'].unique().tolist()
+    # 建立模型預測的標籤列表，將每個標籤設為 1 或 0
+    predicted_labels = [1 if label in label_result_df['指標名稱'].values else 0 for label in fixed_labels]
+    
+    # 印出 true_labels 和 predicted_labels 查看內容
+    print(f"報告書: {target_filename}")
+    print("真實標籤:", true_labels)
+    print("預測標籤:", predicted_labels)
     
     return true_labels, predicted_labels
 
 def evaluate_predictions(true_labels, predicted_labels):
-    # 計算正確、錯誤和遺漏的標籤
-    correct_predictions = set(predicted_labels) & set(true_labels)
-    incorrect_predictions = set(predicted_labels) - set(true_labels)
-    missed_labels = set(true_labels) - set(predicted_labels)
+    correct_labels = []
+    incorrect_labels = []
+
+    # 計算正確和錯誤的標籤
+    for i, (true, pred) in enumerate(zip(true_labels, predicted_labels)):
+        label_name = fixed_labels[i]
+        if true == pred:  # 預測正確的情況
+            correct_labels.append(label_name)
+        else:  # 預測錯誤的情況
+            incorrect_labels.append(label_name)
     
-    # 準確率
-    accuracy = len(correct_predictions) / len(true_labels) if true_labels else 0
-    
-    # 返回結果
+    # 計算準確率
+    accuracy = len(correct_labels) / len(fixed_labels) if fixed_labels else 0
+
     return {
         "accuracy": accuracy,
-        "correct_predictions": list(correct_predictions),
-        "incorrect_predictions": list(incorrect_predictions),
-        "missed_labels": list(missed_labels)
+        "correct_labels": correct_labels,
+        "incorrect_labels": incorrect_labels
     }
 
 def main():
@@ -71,9 +90,8 @@ def main():
         # 打印每份報告的結果
         print(f"報告書: {report_name}")
         print(f"準確率: {result_summary['accuracy'] * 100:.2f}%")
-        print("正確分類的標籤:", result_summary['correct_predictions'])
-        print("錯誤分類的標籤:", result_summary['incorrect_predictions'])
-        print("遺漏的標籤:", result_summary['missed_labels'])
+        print("正確分類的標籤:", result_summary['correct_labels'])
+        print("錯誤分類的標籤:", result_summary['incorrect_labels'])
         
         # 將結果存到 CSV
         output_csv_path = os.path.join(OUTPUT_DIR, f"accuracy_result_{report_name}.csv")
