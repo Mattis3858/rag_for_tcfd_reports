@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 # 定義 PDF 檔案所在的資料夾
 PDF_DIRECTORY = "data/tcfd_report_pdf/"
-OUTPUT_CSV = "pdf_chunk_embeddings.csv"
+OUTPUT_CSV = "data/tcfd_report_pdf_chunks/chunk_embeddings_凱基銀行_2022_300_100.csv"
 load_dotenv()
 openai.api_key = os.environ['OPENAI_API_KEY']
 # 初始化 OpenAIEmbeddings
