@@ -1,9 +1,10 @@
 /__pycache__
 /chroma
 chroma_*
-chroma
 .DS_Store
 /venv
 .env
 /myenv.env
 /myenv
+chroma
+__pycache__
