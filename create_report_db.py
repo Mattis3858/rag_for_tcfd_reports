@@ -46,11 +46,9 @@ def process_pdf(pdf_path):
 
 def main():
     pdf_paths = [
-        "C:\\Users\\bugee\\OneDrive\\桌面\\RAG\\rag_for_tcfd_reports\\data\\tcfd_5report_pdf\\2801_彰化銀行_2022_TCFD_報告書.pdf",
-        "C:\\Users\\bugee\\OneDrive\\桌面\\RAG\\rag_for_tcfd_reports\\data\\tcfd_5report_pdf\\2807_渣打銀行_2022_TCFD_報告書.pdf",
-        "C:\\Users\\bugee\\OneDrive\\桌面\\RAG\\rag_for_tcfd_reports\\data\\tcfd_5report_pdf\\2834_台灣企銀_2022_TCFD_報告書.pdf",
-        "C:\\Users\\bugee\\OneDrive\\桌面\\RAG\\rag_for_tcfd_reports\\data\\tcfd_5report_pdf\\2836_高雄銀行_2022_TCFD_報告書.pdf",
-        "C:\\Users\\bugee\\OneDrive\\桌面\\RAG\\rag_for_tcfd_reports\\data\\tcfd_5report_pdf\\2837_凱基銀行_2022_TCFD_報告書.pdf"
+        "C:\\Users\\bugee\\OneDrive\\桌面\\RAG\\rag_for_tcfd_reports\\data\\tcfd_5report_pdf\\2881_富邦金控_2022_TCFD_報告書.pdf",
+        "C:\\Users\\bugee\\OneDrive\\桌面\\RAG\\rag_for_tcfd_reports\\data\\tcfd_5report_pdf\\5880_合庫金控_2022_TCFD_報告書.pdf"
+        
     ]
     
     for pdf_path in pdf_paths:

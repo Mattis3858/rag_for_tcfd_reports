@@ -67,11 +67,8 @@ def process_report(report_name):
 
 def main():
     report_names = [
-        "2801_彰化銀行_2022_TCFD_報告書",
-        "2807_渣打銀行_2022_TCFD_報告書",
-        "2834_台灣企銀_2022_TCFD_報告書",
-        "2836_高雄銀行_2022_TCFD_報告書",
-        "2837_凱基銀行_2022_TCFD_報告書"
+        "2881_富邦金控_2022_TCFD_報告書",
+        "5880_合庫金控_2022_TCFD_報告書"
     ]
     
     for report_name in report_names:
