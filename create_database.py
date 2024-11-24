@@ -18,7 +18,7 @@ load_dotenv()
 openai.api_key = os.environ['OPENAI_API_KEY']
 
 CHROMA_PATH = "chroma"
-EXCEL_PATH = "data/tcfd接露指引.xlsx"
+EXCEL_PATH = "data/tcfd接露指引 - 加上第一層指標及關鍵字.xlsx"
 
 
 def main():
@@ -27,27 +27,60 @@ def main():
 
 def generate_data_store():
     documents = load_documents_from_excel()
-    chunks = split_text(documents)
-    save_to_chroma(chunks)
+    if documents:  # Only proceed if we have valid documents
+        chunks = split_text(documents)
+        save_to_chroma(chunks)
+    else:
+        print("No valid documents were loaded. Please check your Excel file.")
 
 
 def load_documents_from_excel():
-    # Load the Excel file and create Document objects for each row
-    df = pd.read_excel(EXCEL_PATH)
-    
-    documents = []
-    for _, row in df.iterrows():
-        text = row['第三層(TCFD) 揭露指引']  # 使用實際的文字欄位名稱
-        metadata = {'類別': row['類別']} 
-        documents.append(Document(page_content=text, metadata=metadata))
+    try:
+        # Load the Excel file
+        df = pd.read_excel(EXCEL_PATH)
         
-    return documents
-
+        # Print column names to help with debugging
+        print("Available columns:", df.columns.tolist())
+        
+        documents = []
+        for idx, row in df.iterrows():
+            # Get the text content and handle NaN values
+            text = row['第三層(TCFD) 揭露指引']
+            category = row['類別']
+            
+            # Skip rows where either text or category is NaN/empty
+            if pd.isna(text) or pd.isna(category):
+                print(f"Skipping row {idx + 2} due to missing data")
+                continue
+            
+            # Convert to string and strip whitespace
+            text = str(text).strip()
+            category = str(category).strip()
+            
+            # Only add non-empty documents
+            if text and category:
+                metadata = {'類別': category}
+                try:
+                    documents.append(Document(page_content=text, metadata=metadata))
+                except Exception as e:
+                    print(f"Error creating document for row {idx + 2}: {e}")
+            else:
+                print(f"Skipping row {idx + 2} due to empty content after cleaning")
+        
+        print(f"Successfully loaded {len(documents)} valid documents")
+        return documents
+    
+    except FileNotFoundError:
+        print(f"Excel file not found at path: {EXCEL_PATH}")
+        return []
+    except Exception as e:
+        print(f"Error loading Excel file: {e}")
+        return []
 
 def split_text(documents: list[Document]):
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=500,
-        chunk_overlap=0,
+        chunk_size=8000,
+        chunk_overlap=4000,
         length_function=len,
         add_start_index=True,
     )
@@ -68,7 +101,7 @@ def save_to_chroma(chunks: list[Document]):
 
     # Create a new DB from the documents.
     db = Chroma.from_documents(
-        chunks, OpenAIEmbeddings(), persist_directory=CHROMA_PATH
+        chunks, OpenAIEmbeddings(model="text-embedding-ada-002"), persist_directory=CHROMA_PATH
     )
     db.persist()
     print(f"Saved {len(chunks)} chunks to {CHROMA_PATH}.")

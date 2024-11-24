@@ -7,8 +7,8 @@ from dotenv import load_dotenv
 import openai 
 
 CHROMA_PATH = "chroma"
-CHUNK_CSV_PATH = "data/tcfd_report_pdf_chunks/chunk_embeddings_渣打銀行_2022_300_100.csv"
-OUTPUT_CSV_PATH = "data/tcfd_report_pdf_chunks_matching_result/渣打銀行_2022_300_100_matched_chunks.csv"
+CHUNK_CSV_PATH = "data/tcfd_report_pdf_chunks/chunk_embeddings_富邦金控_2022_300_50.csv"
+OUTPUT_CSV_PATH = "data/tcfd_report_pdf_chunks_matching_result/富邦金控_2022_300_50_matched_chunks.csv"
 load_dotenv()
 openai.api_key = os.environ['OPENAI_API_KEY']
 def load_chunks_from_csv():
@@ -18,9 +18,9 @@ def load_chunks_from_csv():
 def query_chroma_for_similar_chunks(embedding):
     """Queries ChromaDB and returns the top 5 results with similarity above 0.7."""
     embedding = np.array(eval(embedding)).flatten()
-    db = Chroma(persist_directory=CHROMA_PATH, embedding_function=OpenAIEmbeddings())
+    db = Chroma(persist_directory=CHROMA_PATH, embedding_function=OpenAIEmbeddings(model="text-embedding-ada-002"))
     
-    results = db.similarity_search_by_vector_with_relevance_scores(embedding, k=5)
+    results = db.similarity_search_by_vector_with_relevance_scores(embedding, k=47)
     # for result in results:
     #     print(result[0])
     #     print(result[1])
@@ -28,7 +28,7 @@ def query_chroma_for_similar_chunks(embedding):
 
     filtered_results = [
         {"類別": doc[0].metadata['類別'], "content": doc[0].page_content, "cosine_distance": doc[1]}
-        for doc in results if doc[1] <= 0.25
+        for doc in results if doc[1] <= 0.20
     ]
     # print('filter result done')
     return filtered_results

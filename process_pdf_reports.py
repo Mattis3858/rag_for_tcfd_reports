@@ -5,28 +5,30 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
 import openai
 from dotenv import load_dotenv
+import pymupdf
 
 # 定義 PDF 檔案所在的資料夾
-PDF_DIRECTORY = "data/tcfd_report_pdf/"
-OUTPUT_CSV = "data/tcfd_report_pdf_chunks/chunk_embeddings_凱基銀行_2022_300_100.csv"
+PDF_DIRECTORY = "data/tcfd_report_pdf_for_testing/"
+OUTPUT_CSV = "data/tcfd_report_pdf_chunks/chunk_embeddings_富邦金控_2022_300_50.csv"
 load_dotenv()
 openai.api_key = os.environ['OPENAI_API_KEY']
 # 初始化 OpenAIEmbeddings
-embedding_model = OpenAIEmbeddings()
+embedding_model = OpenAIEmbeddings(model="text-embedding-ada-002")
 
 def load_pdf(file_path):
     """Reads PDF and extracts text."""
-    reader = PdfReader(file_path)
+    doc = pymupdf.open(file_path)
     text = ""
-    for page in reader.pages:
-        text += page.extract_text() or ""
+    for page in doc:
+        text += page.get_text() or ""
+        print(text)
     return text
 
 def split_pdf_text(text):
     """Splits text from PDF into smaller chunks."""
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=300,
-        chunk_overlap=100,
+        chunk_overlap=50,
         length_function=len,
         add_start_index=True,
     )
