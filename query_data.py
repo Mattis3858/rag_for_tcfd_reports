@@ -7,8 +7,8 @@ from dotenv import load_dotenv
 import openai 
 
 CHROMA_PATH = "chroma"
-CHUNK_CSV_PATH = "data/tcfd_report_pdf_chunks/chunk_embeddings_富邦金控_2022_300_50.csv"
-OUTPUT_CSV_PATH = "data/tcfd_report_pdf_chunks_matching_result/富邦金控_2022_300_50_matched_chunks.csv"
+CHUNK_CSV_PATH = "data/tcfd_report_pdf_chunks/chunk_embeddings_合庫金控_2022_300_50.csv"
+OUTPUT_CSV_PATH = "data/tcfd_report_pdf_chunks_matching_result/合庫金控_2022_300_50_matched_chunks.csv"
 load_dotenv()
 openai.api_key = os.environ['OPENAI_API_KEY']
 def load_chunks_from_csv():
@@ -28,7 +28,7 @@ def query_chroma_for_similar_chunks(embedding):
 
     filtered_results = [
         {"類別": doc[0].metadata['類別'], "content": doc[0].page_content, "cosine_distance": doc[1]}
-        for doc in results if doc[1] <= 0.20
+        for doc in results if doc[1] <= 0.15
     ]
     # print('filter result done')
     return filtered_results
