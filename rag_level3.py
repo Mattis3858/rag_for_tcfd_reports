@@ -9,7 +9,7 @@ load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 
 # 設定文件路徑與 ChromaDB 的基礎資料夾路徑
-EXCEL_PATH = "C:\\Users\\bugee\\OneDrive\\桌面\\RAG\\rag_for_tcfd_reports\\data\\tcfd接露指引.xlsx"
+EXCEL_PATH = "C:\\Users\\bugee\\OneDrive\\桌面\\RAG\\rag_for_tcfd_reports\\data\\tcfd接露指引 - 加上第一層指標及關鍵字.xlsx"
 BASE_CHROMA_PATH = "chroma_tcfd"
 OUTPUT_PATH = "C:\\Users\\bugee\\OneDrive\\桌面\\RAG\\rag_for_tcfd_reports\\data\\label_result"
 
@@ -67,8 +67,7 @@ def process_report(report_name):
 
 def main():
     report_names = [
-        "2881_富邦金控_2022_TCFD_報告書",
-        "5880_合庫金控_2022_TCFD_報告書"
+       "富邦金控_2022_TCFD_報告書_preprocessed"
     ]
     
     for report_name in report_names:

@@ -11,11 +11,8 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # 定義報告書名稱和對應文件名
 report_files = [
-    ("2801_彰化銀行_2022_TCFD_報告書", "label_result_2801_彰化銀行_2022_TCFD_報告書.csv"),
-    ("2807_渣打銀行_2022_TCFD_報告書", "label_result_2807_渣打銀行_2022_TCFD_報告書.csv"),
-    ("2834_台灣企銀_2022_TCFD_報告書", "label_result_2834_台灣企銀_2022_TCFD_報告書.csv"),
-    ("2836_高雄銀行_2022_TCFD_報告書", "label_result_2836_高雄銀行_2022_TCFD_報告書.csv"),
-    ("2837_凱基銀行_2022_TCFD_報告書", "label_result_2837_凱基銀行_2022_TCFD_報告書.csv")
+    
+    ("2881_富邦金控_2022_TCFD_報告書.pdf", "label_result_富邦金控_2022_TCFD_報告書_preprocessed.csv")
 ]
 
 # 定義固定的 47 個標籤
