@@ -45,7 +45,7 @@ def query_text(query_text, pointer_name, chroma_path):
         results = db.similarity_search_with_relevance_scores(query_text, k=100)
         print(f"[DEBUG] Retrieved {len(results)} results.")
         
-        # 篩選出相關度 >= 0.8 的結果並取前 10 個
+        # 篩選出相關度 >= 0.82 的結果並取前 10 個
         filtered_results = [result for result in results if result[1] >= 0.8]
         filtered_results = sorted(filtered_results, key=lambda x: x[1], reverse=True)[:10]
         print(f"[DEBUG] Filtered and sorted top {len(filtered_results)} results with relevance >= 0.8.")
@@ -98,9 +98,10 @@ def process_report(report_name):
 def main():
     print("[DEBUG] Starting main process...")
     report_names = [
-        "6031_連線銀行_2022_TCFD_報告書",
-        "2893_新光銀行_2021_TCFD_專章完整永續_preprocessed",
-        "6039_將來銀行_2022_TCFD_報告書_preprocessed"
+        # # "6031_連線銀行_2022_TCFD_報告書",
+        "2893_新光銀行_2021_TCFD_專章完整永續_preprocessed"
+        # # "6039_將來銀行_2022_TCFD_報告書_preprocessed",
+        # "富邦金控_2022_TCFD_報告書_preprocessed"
     ]
     
     for report_name in report_names:
