@@ -9,7 +9,7 @@ import pymupdf
 
 # 定義 PDF 檔案所在的資料夾
 PDF_DIRECTORY = "data/tcfd_report_pdf_for_testing/"
-OUTPUT_CSV = "data/tcfd_report_pdf_chunks/chunk_embeddings_富邦金控_2022_300_50_proprocessed.csv"
+OUTPUT_CSV = "data/tcfd_report_pdf_chunks/chunk_embeddings_將來銀行_2022_300_50.csv"
 load_dotenv()
 openai.api_key = os.environ['OPENAI_API_KEY']
 # 初始化 OpenAIEmbeddings

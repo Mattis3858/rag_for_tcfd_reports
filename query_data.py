@@ -7,8 +7,8 @@ from dotenv import load_dotenv
 import openai 
 
 CHROMA_PATH = "chroma"
-CHUNK_CSV_PATH = "data/tcfd_report_pdf_chunks/chunk_embeddings_合庫金控_2022_300_50.csv"
-OUTPUT_CSV_PATH = "data/tcfd_report_pdf_chunks_matching_result/合庫金控_2022_300_50_matched_chunks.csv"
+CHUNK_CSV_PATH = "data/tcfd_report_pdf_chunks/chunk_embeddings_新光銀行_2021_300_50.csv"
+OUTPUT_CSV_PATH = "data/tcfd_report_pdf_chunks_matching_result/新光銀行_2021_300_50_matched_chunks.csv"
 load_dotenv()
 openai.api_key = os.environ['OPENAI_API_KEY']
 def load_chunks_from_csv():
