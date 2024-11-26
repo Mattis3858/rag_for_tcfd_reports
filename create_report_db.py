@@ -46,8 +46,10 @@ def process_pdf(pdf_path):
 
 def main():
     pdf_paths = [
-        "C:\\Users\\bugee\\OneDrive\\桌面\\RAG\\rag_for_tcfd_reports\\data\\tcfd_report_pdf_for_testing\\合庫金控_2022_TCFD_報告書_preprocessed.pdf",
-        "C:\\Users\\bugee\\OneDrive\\桌面\\RAG\\rag_for_tcfd_reports\\data\\tcfd_report_pdf_for_testing\\永豐金控_2022_TCFD_報告書_preprocessed.pdf"
+        
+        "暫存\\2893_新光銀行_2021_TCFD_專章完整永續_preprocessed.pdf",
+        "暫存\\6039_將來銀行_2022_TCFD_報告書_preprocessed.pdf"
+        
         
     ]
     

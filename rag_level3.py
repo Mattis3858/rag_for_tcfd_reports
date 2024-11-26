@@ -98,8 +98,9 @@ def process_report(report_name):
 def main():
     print("[DEBUG] Starting main process...")
     report_names = [
-        "合庫金控_2022_TCFD_報告書_preprocessed",
-        "永豐金控_2022_TCFD_報告書_preprocessed"
+        "6031_連線銀行_2022_TCFD_報告書",
+        "2893_新光銀行_2021_TCFD_專章完整永續_preprocessed",
+        "6039_將來銀行_2022_TCFD_報告書_preprocessed"
     ]
     
     for report_name in report_names:
