@@ -46,8 +46,8 @@ def query_text(query_text, pointer_name, chroma_path):
         print(f"[DEBUG] Retrieved {len(results)} results.")
         
         # 篩選出相關度 >= 0.82 的結果並取前 10 個
-        filtered_results = [result for result in results if result[1] >= 0.8]
-        filtered_results = sorted(filtered_results, key=lambda x: x[1], reverse=True)[:10]
+        filtered_results = [result for result in results if result[1] >= 0.82875]
+        filtered_results = sorted(filtered_results, key=lambda x: x[1], reverse=True)[:5]
         print(f"[DEBUG] Filtered and sorted top {len(filtered_results)} results with relevance >= 0.8.")
         
         # 建立儲存結果的 DataFrame
