@@ -18,7 +18,7 @@ load_dotenv()
 openai.api_key = os.environ['OPENAI_API_KEY']
 
 CHROMA_PATH = "chroma"
-EXCEL_PATH = "data/tcfd接露指引 - 加上第一層指標及關鍵字.xlsx"
+EXCEL_PATH = "data/tcfd第四層接露指引 - 加上第一層指標及關鍵字.xlsx"
 
 
 def main():
@@ -45,7 +45,7 @@ def load_documents_from_excel():
         documents = []
         for idx, row in df.iterrows():
             # Get the text content and handle NaN values
-            text = row['第三層(TCFD) 揭露指引']
+            text = row['第四層(TCFD) 揭露指引']
             category = row['類別']
             
             # Skip rows where either text or category is NaN/empty
