@@ -7,35 +7,37 @@ from dotenv import load_dotenv
 import openai 
 
 CHROMA_PATH = "chroma"
-CHUNK_CSV_PATH = "data/tcfd_report_pdf_chunks/chunk_embeddings_將來銀行_2022_300_50.csv"
-OUTPUT_CSV_PATH = "data/tcfd_report_pdf_chunks_matching_result/將來銀行_2022_300_50_matched_chunks.csv"
+CHUNK_CSV_DIRECTORY = "data/tcfd_report_pdf_chunks_第四層/"
+OUTPUT_CSV_DIRECTORY = "data/tcfd_report_pdf_chunks_matching_result_第四層/"
+
+# Load environment variables
 load_dotenv()
 openai.api_key = os.environ['OPENAI_API_KEY']
-def load_chunks_from_csv():
-    """Loads chunk embeddings and metadata from CSV."""
-    return pd.read_csv(CHUNK_CSV_PATH)
+
+# Ensure output directory exists
+os.makedirs(OUTPUT_CSV_DIRECTORY, exist_ok=True)
+
+# Initialize OpenAIEmbeddings
+embedding_model = OpenAIEmbeddings(model="text-embedding-ada-002")
+def load_chunks_from_csv(csv_path):
+    """Loads chunk embeddings and metadata from a specific CSV file."""
+    return pd.read_csv(csv_path)
 
 def query_chroma_for_similar_chunks(embedding):
     """Queries ChromaDB and returns the top 5 results with similarity above 0.7."""
     embedding = np.array(eval(embedding)).flatten()
-    db = Chroma(persist_directory=CHROMA_PATH, embedding_function=OpenAIEmbeddings(model="text-embedding-ada-002"))
+    db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding_model)
     
     results = db.similarity_search_by_vector_with_relevance_scores(embedding, k=47)
-    # for result in results:
-    #     print(result[0])
-    #     print(result[1])
-    #     print(type(result))
-
     filtered_results = [
         {"類別": doc[0].metadata['類別'], "content": doc[0].page_content, "cosine_distance": doc[1]}
         for doc in results if doc[1] <= 0.2
     ]
-    # print('filter result done')
     return filtered_results
 
-def process_chunks_and_save():
-    """Processes each chunk, queries Chroma, and saves results to a CSV."""
-    df_chunks = load_chunks_from_csv()
+def process_chunks_and_save(csv_path):
+    """Processes each chunk in a CSV file, queries Chroma, and saves results to a corresponding CSV."""
+    df_chunks = load_chunks_from_csv(csv_path)
     output_data = []
 
     for _, row in df_chunks.iterrows():
@@ -46,7 +48,6 @@ def process_chunks_and_save():
         
         # Query ChromaDB for similar chunks
         results = query_chroma_for_similar_chunks(embedding)
-        # Extract unique categories from results
         matching_categories = [doc['類別'] for doc in results]
         unique_categories = list(set(matching_categories))
         cosine_distance = [doc['cosine_distance'] for doc in results]
@@ -62,10 +63,26 @@ def process_chunks_and_save():
             "Cosine_Distance": cosine_distance
         })
 
+    # Generate output file path
+    base_name = os.path.basename(csv_path).replace("chunk_embeddings_", "").replace(".csv", "")
+    output_file_name = f"{base_name}_matched_chunks.csv"
+    output_file_path = os.path.join(OUTPUT_CSV_DIRECTORY, output_file_name)
+    
     # Save to CSV
     output_df = pd.DataFrame(output_data)
-    output_df.to_csv(OUTPUT_CSV_PATH, index=False)
-    print(f"Saved matched chunks and categories to {OUTPUT_CSV_PATH}.")
+    output_df.to_csv(output_file_path, index=False)
+    print(f"Saved matched chunks and categories to {output_file_path}.")
+
+def main():
+    """Processes all chunk CSV files in the directory and saves matching results."""
+    chunk_csv_files = [
+        os.path.join(CHUNK_CSV_DIRECTORY, f) 
+        for f in os.listdir(CHUNK_CSV_DIRECTORY) if f.endswith('.csv')
+    ]
+    
+    for csv_path in chunk_csv_files:
+        print(f"\nProcessing {csv_path}...")
+        process_chunks_and_save(csv_path)
 
 if __name__ == "__main__":
-    process_chunks_and_save()
+    main()
