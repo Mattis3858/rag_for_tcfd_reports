@@ -15,7 +15,8 @@ RANK_PATH = r"C:\Users\bugee\OneDrive\桌面\RAG\rag_for_tcfd_reports\data\answe
 BASE_CHROMA_PATH = "chroma_tcfd"
 OUTPUT_PATH = "rag_for_tcfd_reports/data/label_result"
 ACCURACY_RESULT_PATH = "rag_for_tcfd_reports/data/accuracy_result"
-ALL_RESULTS_PATH_TEMPLATE = "rag_for_tcfd_reports/data/all_query_results_{}.csv"  # 動態建立不同檔案名稱
+# 修改這裡的路徑，將 CSV 檔存在指定的資料夾
+ALL_RESULTS_PATH_TEMPLATE = r"C:\Users\bugee\OneDrive\桌面\query_result\all_query_results_{}.csv"
 
 # Ensure output directories exist
 os.makedirs(OUTPUT_PATH, exist_ok=True)
@@ -48,7 +49,7 @@ def get_all_results(report_name, k=100):
     documents = load_documents()
     embedding_function = OpenAIEmbeddings()
     db = Chroma(persist_directory=chroma_path, embedding_function=embedding_function)
-    ALL_RESULTS_PATH = ALL_RESULTS_PATH_TEMPLATE.format(report_name)  # 動態檔案路徑
+    ALL_RESULTS_PATH = ALL_RESULTS_PATH_TEMPLATE.format(report_name)
 
     all_results = []
     total_docs = len(documents)
