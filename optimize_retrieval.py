@@ -60,7 +60,7 @@ def get_all_results(report_name, k=100):
         query = f'揭露指標：{original_label}, 定義如下：{text}'
         results = db.similarity_search_with_relevance_scores(query, k=k)
 
-        if i % 10 == 0:
+        if i % 100 == 0:
             print(f"[INFO] Processed {i}/{total_docs} documents...")
 
         for doc, score in results:
