@@ -9,7 +9,7 @@ load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 
 # Paths to files
-EXCEL_PATH = r"C:\Users\bugee\OneDrive\桌面\RAG\rag_for_tcfd_reports\data\tcfd第四層接露指引_加上第一層指標.xlsx"
+EXCEL_PATH = r"C:\Users\bugee\OneDrive\桌面\RAG\rag_for_tcfd_reports\data\tcfd第四層接露指引 - 加上第一層指標及關鍵字.xlsx"
 RANK_PATH = r"C:\Users\bugee\OneDrive\桌面\RAG\rag_for_tcfd_reports\data\answer\rank.xlsx"
 
 BASE_CHROMA_PATH = "chroma_tcfd"
@@ -79,12 +79,20 @@ def process_report(report_name, threshold):
     results = {}
     output_data = []
 
-    for text, original_label in documents:
+    total_docs = len(documents)
+    print(f"[INFO] Start processing {total_docs} documents with threshold={threshold}")
+
+    for i, (text, original_label) in enumerate(documents, start=1):
         # 將 Excel 讀到的原始 label 映射成對應的 Qxxx
         mapped_label = map_label_to_q(original_label)
 
         query = f'揭露指標：{original_label}, 定義如下：{text}'
         retrieved = query_text(query, chroma_path, threshold)
+        
+        # 顯示進度條或進度訊息
+        if i % 10 == 0:  # 每隔10筆顯示一次進度
+            print(f"[INFO] Processed {i}/{total_docs} documents...")
+
         if retrieved:
             # 如果有檢索到 => 視為該 mapped_label 預測為 1
             results[mapped_label] = 1
@@ -166,7 +174,7 @@ def optimize_threshold(report_name, institution, year):
 
     for threshold in thresholds:
         print(f"\nTesting threshold: {threshold}")
-        predicted = process_report(report_name, threshold)
+        predicted = process_report(report_name, threshold)  
         accuracy = calculate_accuracy(predicted, RANK_PATH, institution, year, ACCURACY_RESULT_PATH)
         print(f"Accuracy at {threshold}: {accuracy:.2%}")
         if accuracy > best_accuracy:
