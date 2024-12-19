@@ -1,4 +1,6 @@
 import os
+import time
+import psutil
 import pandas as pd
 from dotenv import load_dotenv
 from langchain_community.embeddings import OpenAIEmbeddings
@@ -42,7 +44,7 @@ def load_documents():
         documents.append((text, label))
     return documents
 
-def get_all_results(report_name, k=100):
+def get_all_results(report_name, k=50):  # 改為 k=50
     chroma_path = os.path.join(BASE_CHROMA_PATH, report_name)
     documents = load_documents()
     embedding_function = OpenAIEmbeddings()
@@ -53,13 +55,22 @@ def get_all_results(report_name, k=100):
     total_docs = len(documents)
     print(f"[INFO] Start retrieving all results for {total_docs} documents (k={k})")
 
+    start_time = time.time()
+    log_interval = 50  # 每50個文件印出一次狀態
+
     for i, (text, original_label) in enumerate(documents, start=1):
         mapped_label = map_label_to_q(original_label)
         query = f'揭露指標：{original_label}, 定義如下：{text}'
         results = db.similarity_search_with_relevance_scores(query, k=k)
 
-        if i % 10 == 0:
+        # 每50筆文件印出中間狀態
+        if i % log_interval == 0:
+            elapsed_time = time.time() - start_time
+            cpu_usage = psutil.cpu_percent()
+            mem_info = psutil.virtual_memory()
+            memory_usage = mem_info.used / (1024**3)  # 轉換成GB
             print(f"[INFO] Processed {i}/{total_docs} documents...")
+            print(f"[INFO] Elapsed Time: {elapsed_time:.2f}s, CPU Usage: {cpu_usage}%, Memory Usage: {memory_usage:.2f}GB")
 
         for doc, score in results:
             all_results.append({
@@ -154,13 +165,13 @@ def optimize_threshold(df_all, institution, year, report_name):
     return best_threshold
 
 def main():
-    report_name = "新光金控_2022_TCFD_報告書_preprocessed"
-    institution = "新光金"
+    report_name = "富邦金控_2022_TCFD_報告書_preprocessed"
+    institution = "富邦金"
     year = 2022
 
     ALL_RESULTS_PATH = ALL_RESULTS_PATH_TEMPLATE.format(report_name)
     if not os.path.exists(ALL_RESULTS_PATH):
-        df_all = get_all_results(report_name, k=100)
+        df_all = get_all_results(report_name, k=50)  # 這裡設定k=50
     else:
         print(f"[INFO] Loading precomputed results from {ALL_RESULTS_PATH}")
         df_all = pd.read_csv(ALL_RESULTS_PATH)

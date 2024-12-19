@@ -66,7 +66,7 @@ def main():
     """
     # 正確的 PDF 檔案路徑列表
     pdf_paths = [
-        r"data\tcfd_report_pdf_for_testing\新光金控_2022_TCFD_報告書_preprocessed.pdf"
+        r"C:\Users\bugee\OneDrive\桌面\RAG\rag_for_tcfd_reports\data\tcfd_report_pdf_for_testing\富邦金控_2022_TCFD_報告書_preprocessed.pdf"
     ]
 
     # 處理每一個 PDF 檔案
