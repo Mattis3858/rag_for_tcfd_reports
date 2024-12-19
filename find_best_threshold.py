@@ -24,7 +24,19 @@ def load_chunks_from_csv(csv_path):
     """Loads chunk embeddings and metadata from a specific CSV file."""
     return pd.read_csv(csv_path)
 
-def query_chroma_for_similar_chunks(embedding):
+# def query_chroma_for_similar_chunks(embedding):
+#     """Queries ChromaDB and returns the top 5 results with similarity above 0.7."""
+#     embedding = np.array(eval(embedding)).flatten()
+#     db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding_model)
+    
+#     results = db.similarity_search_by_vector_with_relevance_scores(embedding, k=47)
+#     filtered_results = [
+#         {"類別": doc[0].metadata['類別'], "content": doc[0].page_content, "cosine_distance": doc[1]}
+#         for doc in results if doc[1] <= 0.2
+#     ]
+#     return filtered_results
+
+def query_chroma_for_similar_chunks(embedding, threshold):
     """Queries ChromaDB and returns the top 5 results with similarity above 0.7."""
     embedding = np.array(eval(embedding)).flatten()
     db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding_model)
@@ -32,7 +44,7 @@ def query_chroma_for_similar_chunks(embedding):
     results = db.similarity_search_by_vector_with_relevance_scores(embedding, k=47)
     filtered_results = [
         {"類別": doc[0].metadata['類別'], "content": doc[0].page_content, "cosine_distance": doc[1]}
-        for doc in results if doc[1] <= 0.2
+        for doc in results if doc[1] <= threshold
     ]
     return filtered_results
 
@@ -76,9 +88,19 @@ def process_chunks_and_save(csv_path):
 
 def load_answer(institution, year):
     latest_answer_df = pd.read_excel(ANSWER_PATH)
+    if(institution[2:4] == "金控"):
+        institution = institution[0:2] + "金"
+    # print(latest_answer_df)
+    # print(institution)
+    year = int(year)
     answer_for_institution = latest_answer_df[latest_answer_df['Financial_Institutions'] == institution]
+    # print(f"Unique values in latest_answer_df['Year']: {latest_answer_df['Year'].unique()}")
+    # print(f"Type of 'Year' column: {latest_answer_df['Year'].dtype}")
+    # print(f"Value of year: {year}, type: {type(year)}")
     answer_for_institution = answer_for_institution[latest_answer_df['Year'] == year]
+    # print(answer_for_institution)
     columns_to_print = answer_for_institution.loc[:, "Q1":"Q82"].iloc[0].to_dict()
+    # print(answer_for_institution.loc[:, "Q1":"Q82"])
     return columns_to_print
 
 def read_report_pdf(csv_path):
@@ -99,18 +121,24 @@ def read_report_pdf(csv_path):
     return output_data
 
 def optimize_threshold():
-    return
-def main():
-    """Processes all chunk CSV files in the directory and saves matching results."""
     chunk_csv_files = [
         os.path.join(CHUNK_CSV_DIRECTORY, f) 
         for f in os.listdir(CHUNK_CSV_DIRECTORY) if f.endswith('.csv')
     ]
-    
+    print(chunk_csv_files)
     for csv_path in chunk_csv_files:
         print(f"\nProcessing {csv_path}...")
-        print(read_report_pdf(csv_path))
+        institution = csv_path.split('/')[2].split('_')[2]
+        year = csv_path.split('/')[2].split('_')[3]
+        print(query_chroma_for_similar_chunks(read_report_pdf(csv_path)[0].get('Embedding'), 1.0))
+        # print(institution[2:4])
+        # print(load_answer(institution, year))
+        # print(read_report_pdf(csv_path)[0].get('Embedding'))
         # process_chunks_and_save(csv_path)
+    return
+def main():
+    optimize_threshold()
+    
 
 if __name__ == "__main__":
     main()
