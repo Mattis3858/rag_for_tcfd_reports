@@ -38,15 +38,27 @@ def load_chunks_from_csv(csv_path):
 
 def query_chroma_for_similar_chunks(embedding, threshold):
     """Queries ChromaDB and returns the top 5 results with similarity above 0.7."""
-    embedding = np.array(eval(embedding)).flatten()
-    db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding_model)
+    # embedding = np.array(eval(embedding)).flatten()
+    # db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding_model)
     
-    results = db.similarity_search_by_vector_with_relevance_scores(embedding, k=47)
-    filtered_results = [
-        {"類別": doc[0].metadata['類別'], "content": doc[0].page_content, "cosine_distance": doc[1]}
-        for doc in results if doc[1] <= threshold
-    ]
-    return filtered_results
+    # results = db.similarity_search_by_vector_with_relevance_scores(embedding, k=47)
+    # filtered_results = [
+    #     {"類別": doc[0].metadata['類別'], "content": doc[0].page_content, "cosine_distance": doc[1]}
+    #     for doc in results if doc[1] <= threshold
+    # ]
+    filter_results = [
+    {
+        "類別": "G-1-1",
+        "content": "This is the content of the chunk.",
+        "cosine_distance": 0.18
+    },
+    {
+        "類別": "S-2-3",
+        "content": "Another similar chunk's content.",
+        "cosine_distance": 0.15
+    }
+]
+    return filter_results
 
 def process_chunks_and_save(csv_path):
     """Processes each chunk in a CSV file, queries Chroma, and saves results to a corresponding CSV."""
@@ -120,22 +132,30 @@ def read_report_pdf(csv_path):
         })
     return output_data
 
-def optimize_threshold():
+def calculate_accuracy():
+    return
+
+def optimize_threshold(answer, report_dict):
     chunk_csv_files = [
         os.path.join(CHUNK_CSV_DIRECTORY, f) 
         for f in os.listdir(CHUNK_CSV_DIRECTORY) if f.endswith('.csv')
     ]
     print(chunk_csv_files)
-    for csv_path in chunk_csv_files:
-        print(f"\nProcessing {csv_path}...")
-        institution = csv_path.split('/')[2].split('_')[2]
-        year = csv_path.split('/')[2].split('_')[3]
-        print(query_chroma_for_similar_chunks(read_report_pdf(csv_path)[0].get('Embedding'), 1.0))
-        # print(institution[2:4])
-        # print(load_answer(institution, year))
-        # print(read_report_pdf(csv_path)[0].get('Embedding'))
-        # process_chunks_and_save(csv_path)
-    return
+    thresholds = np.arange(0.0, 2.1, 0.1)
+    accuracy_in_threshold = []
+    for threshold in thresholds:
+        for csv_path in chunk_csv_files:
+            print(f"\nProcessing {csv_path}...")
+            institution = csv_path.split('/')[2].split('_')[2]
+            year = csv_path.split('/')[2].split('_')[3]
+            print(query_chroma_for_similar_chunks(read_report_pdf(csv_path)[0].get('Embedding'), 1.0))
+
+            # print(institution[2:4])
+            # print(load_answer(institution, year))
+            # print(read_report_pdf(csv_path)[0].get('Embedding'))
+            # process_chunks_and_save(csv_path)
+    return accuracy_in_threshold
+
 def main():
     optimize_threshold()
     
