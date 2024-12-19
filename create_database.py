@@ -17,12 +17,20 @@ load_dotenv()
 # your .env file.
 openai.api_key = os.environ['OPENAI_API_KEY']
 
+# try:
+#     test_embedding = OpenAIEmbeddings(model="text-embedding-ada-002")
+#     print("OpenAI Embeddings initialized successfully.")
+# except Exception as e:
+#     print(f"Error initializing OpenAI Embeddings: {e}")
+
+
 CHROMA_PATH = "chroma"
 EXCEL_PATH = "data/tcfd第四層接露指引 - 加上第一層指標及關鍵字.xlsx"
 
 
 def main():
     generate_data_store()
+    # return
 
 
 def generate_data_store():
@@ -88,23 +96,45 @@ def split_text(documents: list[Document]):
     print(f"Split {len(documents)} documents into {len(chunks)} chunks.")
 
     document = chunks[10] if len(chunks) > 10 else chunks[0]
-    print(document.page_content)
-    print(document.metadata)
+    # print(document.page_content)
+    # print(document.metadata)
 
     return chunks
 
 
 def save_to_chroma(chunks: list[Document]):
-    # Clear out the database first.
-    if os.path.exists(CHROMA_PATH):
-        shutil.rmtree(CHROMA_PATH)
+    print("Starting save_to_chroma...", flush=True)
+    try:
+        if os.path.exists(CHROMA_PATH):
+            print("Removing existing database...", flush=True)
+            try:
+                shutil.rmtree(CHROMA_PATH)
+                print("Existing database removed.", flush=True)
+            except Exception as e:
+                print(f"Error removing database: {e}", flush=True)
+                return
 
-    # Create a new DB from the documents.
-    db = Chroma.from_documents(
-        chunks, OpenAIEmbeddings(model="text-embedding-ada-002"), persist_directory=CHROMA_PATH
-    )
-    db.persist()
-    print(f"Saved {len(chunks)} chunks to {CHROMA_PATH}.")
+        print("Creating Chroma database...", flush=True)
+        batch_size = 50
+        for i in range(0, len(chunks), batch_size):
+            batch = chunks[i:i + batch_size]
+            try:
+                print(f"Processing batch {i // batch_size + 1}...", flush=True)
+                db = Chroma.from_documents(
+                    batch, OpenAIEmbeddings(model="text-embedding-ada-002"), persist_directory=CHROMA_PATH
+                )
+                print(f"Batch {i // batch_size + 1} processed successfully.", flush=True)
+            except Exception as e:
+                print(f"Error processing batch {i // batch_size + 1}: {e}", flush=True)
+                continue
+
+        print("Completed all batches. Preparing final save...", flush=True)
+        print(f"Saved {len(chunks)} chunks to {CHROMA_PATH}.", flush=True)
+    except Exception as e:
+        print(f"Error in save_to_chroma: {e}", flush=True)
+
+
+
 
 
 if __name__ == "__main__":
