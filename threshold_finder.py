@@ -61,7 +61,7 @@ def get_all_results(report_name, k=50):
     print(f"[INFO] Start retrieving all results for {report_name}: {total_docs} documents (k={k})")
 
     start_time = time.time()
-    log_interval = 50  # 每50個文件印出一次狀態
+    log_interval = 10
 
     for i, (text, original_label) in enumerate(documents, start=1):
         mapped_label = map_label_to_q(original_label)
