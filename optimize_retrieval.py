@@ -14,13 +14,11 @@ RANK_PATH = r"C:\Users\bugee\OneDrive\桌面\RAG\rag_for_tcfd_reports\data\answe
 
 BASE_CHROMA_PATH = "chroma_tcfd"
 OUTPUT_PATH = "rag_for_tcfd_reports/data/label_result"
-ACCURACY_RESULT_PATH = "rag_for_tcfd_reports/data/accuracy_result"
-# 修改這裡的路徑，將 CSV 檔存在指定的資料夾
+ACCURACY_RESULT_PATH_TEMPLATE = "rag_for_tcfd_reports/data/accuracy_result/{}"  # 動態加入 report_name
 ALL_RESULTS_PATH_TEMPLATE = r"C:\Users\bugee\OneDrive\桌面\query_result\all_query_results_{}.csv"
 
-# Ensure output directories exist
+# Ensure base directories exist
 os.makedirs(OUTPUT_PATH, exist_ok=True)
-os.makedirs(ACCURACY_RESULT_PATH, exist_ok=True)
 
 def map_label_to_q(label: str) -> str:
     last_part = label.split('_')[-1]
@@ -60,7 +58,7 @@ def get_all_results(report_name, k=100):
         query = f'揭露指標：{original_label}, 定義如下：{text}'
         results = db.similarity_search_with_relevance_scores(query, k=k)
 
-        if i % 10 == 0:
+        if i % 50 == 0:
             print(f"[INFO] Processed {i}/{total_docs} documents...")
 
         for doc, score in results:
@@ -76,7 +74,7 @@ def get_all_results(report_name, k=100):
     print(f"[INFO] All query results saved to: {ALL_RESULTS_PATH}")
     return df_all
 
-def calculate_accuracy(predicted, rank_file, institution, year, output_path, threshold):
+def calculate_accuracy(predicted, rank_file, institution, year, output_path, threshold, report_name):
     rank_df = pd.read_excel(rank_file)
     ground_truth_df = rank_df[(rank_df['Financial_Institutions'] == institution) &
                               (rank_df['Year'] == year)]
@@ -105,24 +103,37 @@ def calculate_accuracy(predicted, rank_file, institution, year, output_path, thr
     print("\n[INFO] Predicted Labels:")
     print(predicted_list)
 
-    for i, (gt_key, gt_val) in enumerate(ground_truth.items()):
-        if predicted_list[i] == 0:
-            print(f"[DEBUG] Label = {gt_key} 被預測為 0")
-
+    # 計算準確率
     accuracy = sum([1 for gt, pred in zip(ground_truth_list, predicted_list) if gt == pred]) / len(ground_truth_list)
 
-    accuracy_file = os.path.join(output_path, f"accuracy_result_{threshold}.csv")
+    # 在 result_df 裡面加入一列顯示 Accuracy
     result_df = pd.DataFrame(comparison)
+    summary_df = pd.DataFrame([{
+        "Label": f"Accuracy at {threshold}",
+        "Ground Truth": "",
+        "Predicted": "",
+        "Match": f"{accuracy:.2%}"
+    }])
+    result_df = pd.concat([result_df, summary_df], ignore_index=True)
+
+    # 報告書特定的 accuracy 路徑
+    report_accuracy_path = os.path.join(output_path, report_name)
+    os.makedirs(report_accuracy_path, exist_ok=True)
+
+    accuracy_file = os.path.join(report_accuracy_path, f"accuracy_result_{threshold}.csv")
     result_df.to_csv(accuracy_file, index=False, encoding="utf-8-sig")
     print(f"[INFO] Accuracy results saved to: {accuracy_file}")
     print(f"[INFO] Accuracy: {accuracy:.2%}")
 
     return accuracy
 
-def optimize_threshold(df_all, institution, year):
+def optimize_threshold(df_all, institution, year, report_name):
     thresholds = [x / 100 for x in range(75, 96, 2)]  # 0.75, 0.77, 0.79, ... 0.95
     best_threshold = 0.75
     best_accuracy = 0
+
+    ACCURACY_RESULT_PATH = ACCURACY_RESULT_PATH_TEMPLATE.format(report_name)
+    os.makedirs(ACCURACY_RESULT_PATH, exist_ok=True)
 
     for threshold in thresholds:
         print(f"\n[INFO] Testing threshold: {threshold}")
@@ -132,7 +143,7 @@ def optimize_threshold(df_all, institution, year):
         for label in filtered["mapped_label"].unique():
             predicted[label] = 1
 
-        accuracy = calculate_accuracy(predicted, RANK_PATH, institution, year, ACCURACY_RESULT_PATH, threshold)
+        accuracy = calculate_accuracy(predicted, RANK_PATH, institution, year, ACCURACY_RESULT_PATH, threshold, report_name)
         print(f"[INFO] Accuracy at {threshold}: {accuracy:.2%}")
 
         if accuracy > best_accuracy:
@@ -154,7 +165,7 @@ def main():
         print(f"[INFO] Loading precomputed results from {ALL_RESULTS_PATH}")
         df_all = pd.read_csv(ALL_RESULTS_PATH)
 
-    best_threshold = optimize_threshold(df_all, institution, year)
+    best_threshold = optimize_threshold(df_all, institution, year, report_name)
     print(f"[INFO] Optimal threshold for {report_name}: {best_threshold}")
 
 if __name__ == "__main__":
