@@ -3,9 +3,6 @@ import time
 import psutil
 import pandas as pd
 from dotenv import load_dotenv
-import os
-import pandas as pd
-from dotenv import load_dotenv
 from langchain_community.embeddings import OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
 
@@ -134,21 +131,24 @@ def calculate_accuracy_for_report(df_all, threshold, rank_file, institution, yea
     
     if ground_truth_df.empty:
         print(f"[WARN] 找不到 {institution} 在 {year} 年的真實標籤。跳過。")
-        return None
+        return None, None, None, None
 
     ground_truth = ground_truth_df.loc[:, "Q1":"Q82"].iloc[0].to_dict()
 
-    ground_truth_list = []
-    predicted_list = []
+    # 初始化 Q1-Q82 的二進制格式
+    predict_binary = []
+    ground_truth_binary = []
 
-    for key, value in ground_truth.items():
-        ground_truth_value = int(value) if not pd.isna(value) else 0
-        predicted_value = 1 if key in predicted_labels else 0
-        ground_truth_list.append(ground_truth_value)
-        predicted_list.append(predicted_value)
+    for q in [f"Q{i}" for i in range(1, 83)]:
+        ground_truth_value = int(ground_truth[q]) if q in ground_truth and not pd.isna(ground_truth[q]) else 0
+        predicted_value = 1 if q in predicted_labels else 0
+        ground_truth_binary.append(ground_truth_value)
+        predict_binary.append(predicted_value)
 
-    accuracy = sum(gt == pred for gt, pred in zip(ground_truth_list, predicted_list)) / len(ground_truth_list)
-    return accuracy
+    # 計算準確率
+    accuracy = sum(gt == pred for gt, pred in zip(ground_truth_binary, predict_binary)) / len(ground_truth_binary)
+
+    return accuracy, predict_binary, ground_truth_binary
 
 def main():
     # 定義六份報告的相關資訊 (報告名稱, 機構, 年份)
@@ -156,7 +156,7 @@ def main():
         ("富邦金控_2022_TCFD_報告書_preprocessed", "富邦金", 2022),
         ("新光金控_2022_TCFD_報告書_preprocessed", "新光金", 2022),
         ("永豐銀行_2022_TCFD_報告書_preprocessed", "永豐銀行", 2022),
-        ("開發金控_2021_TCFD_報告書_preprocesed", "開發金", 2021),  # 保持不變
+        ("開發金控_2021_TCFD_報告書_preprocesed", "開發金", 2021),
         ("瑞興銀行_2022_TCFD_報告書", "瑞興銀行", 2022),
         ("華泰銀行_2022_TCFD_報告書_preprocessed", "華泰銀行", 2022)
     ]
@@ -195,7 +195,7 @@ def main():
                 print(f"[WARN] {report_name} 的數據為空，跳過此報告的準確率計算。")
                 continue
 
-            acc = calculate_accuracy_for_report(df_all, threshold, RANK_PATH, institution, year, report_name)
+            acc, _, _ = calculate_accuracy_for_report(df_all, threshold, RANK_PATH, institution, year, report_name)
             if acc is not None:
                 accuracies.append(acc)
                 print(f"[INFO] {report_name}: 閾值 {threshold} 下的準確率 = {acc:.2%}")
@@ -219,7 +219,7 @@ def main():
 
     print(f"\n[INFO] 所有六份報告的最佳閾值: {best_threshold}, 平均準確率: {best_average_accuracy:.2%}")
 
-    # 使用最佳閾值計算並保存每份報告的準確率
+    # 使用最佳閾值計算並保存每份報告的準確率及預測標籤和真實標籤
     summary_results = []
     for report_data in all_reports_data:
         report_name = report_data["report_name"]
@@ -231,14 +231,18 @@ def main():
             print(f"[WARN] {report_name} 的數據為空，跳過此報告的準確率計算。")
             continue
 
-        acc = calculate_accuracy_for_report(df_all, best_threshold, RANK_PATH, institution, year, report_name)
+        acc, predict_binary, ground_truth_binary = calculate_accuracy_for_report(
+            df_all, best_threshold, RANK_PATH, institution, year, report_name
+        )
         if acc is not None:
             summary_results.append({
                 "report_name": report_name,
                 "institution": institution,
                 "year": year,
                 "best_threshold": best_threshold,
-                "accuracy_at_best_threshold": acc
+                "accuracy_at_best_threshold": acc,
+                "PREDICT": ','.join(map(str, predict_binary)),
+                "GROUND_TRUTH": ','.join(map(str, ground_truth_binary))
             })
             print(f"[INFO] {report_name}: 在最佳閾值 {best_threshold} 下的準確率 = {acc:.2%}")
         else:
@@ -248,7 +252,7 @@ def main():
         summary_df = pd.DataFrame(summary_results)
         summary_path = os.path.join(ACCURACY_RESULT_BASE, "summary_of_all_reports_best_threshold.csv")
         summary_df.to_csv(summary_path, index=False, encoding="utf-8-sig")
-        print(f"[INFO] 含最佳閾值的總結已保存至: {summary_path}")
+        print(f"[INFO] 含最佳閾值及預測標籤和真實標籤的總結已保存至: {summary_path}")
     else:
         print("[WARN] 沒有生成任何總結結果。")
 
