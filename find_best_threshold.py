@@ -40,8 +40,9 @@ def query_chroma_for_similar_chunks(embedding, threshold):
     """Queries ChromaDB and returns the top 5 results with similarity above 0.7."""
     embedding = np.array(eval(embedding)).flatten()
     db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding_model)
-    
+    # print(type(threshold))
     results = db.similarity_search_by_vector_with_relevance_scores(embedding, k=47)
+    # print(results)
     filtered_results = [
         {"類別": doc[0].metadata['類別'], "content": doc[0].page_content, "cosine_distance": doc[1]}
         for doc in results if doc[1] <= threshold
@@ -50,7 +51,7 @@ def query_chroma_for_similar_chunks(embedding, threshold):
     #     {
     #         "類別": "G-1-1_1",
     #         "content": "This is the content of the chunk.",
-    #         "cosine_distance": 0.18
+    #         "cosine_distance": 0.25
     #     },
     #     {
     #         "類別": "S-2-3_15",
@@ -60,9 +61,16 @@ def query_chroma_for_similar_chunks(embedding, threshold):
     #     {
     #         "類別": "S-2-3_82",
     #         "content": "Another similar chunk's content.",
-    #         "cosine_distance": 0.15
+    #         "cosine_distance": 0.05
     #     }
     # ]
+    # for doc in filtered_results:
+    #     print(doc["cosine_distance"] <= threshold)
+    # filtered_results = [
+    #     {"類別": doc[0].metadata['類別'], "content": doc[0].page_content, "cosine_distance": doc[1]}
+    #     for doc in filtered_results if doc["cosine_distance"] <= threshold
+    # ]
+    # print(filtered_results)
     return filtered_results
 
 def process_chunks_and_save(csv_path):
@@ -87,10 +95,10 @@ def process_chunks_and_save(csv_path):
         output_data.append({
             'Filename': file_name,
             'Chunk_ID': chunk_id,
-            "Chunk_Text": chunk_text,
-            "Embedding": embedding,
+            # "Chunk_Text": chunk_text,
+            # "Embedding": embedding,
             "Matched_Categories": unique_categories,
-            "Cosine_Distance": cosine_distance
+            # "Cosine_Distance": cosine_distance
         })
 
     # Generate output file path
@@ -114,7 +122,8 @@ def load_answer(institution, year):
     # print(f"Unique values in latest_answer_df['Year']: {latest_answer_df['Year'].unique()}")
     # print(f"Type of 'Year' column: {latest_answer_df['Year'].dtype}")
     # print(f"Value of year: {year}, type: {type(year)}")
-    answer_for_institution = answer_for_institution[answer_for_institution['Year'] == year]
+    answer_for_institution = answer_for_institution[latest_answer_df['Year'] == year]
+
     # print(answer_for_institution)
     if not answer_for_institution.empty:
         columns_to_print = answer_for_institution.loc[:, "Q1":"Q82"].iloc[0].to_dict()
@@ -140,9 +149,9 @@ def read_report_pdf(csv_path, threshold):
         output_data.append({
                 'Filename': file_name,
                 'Chunk_ID': chunk_id,
-                # "Chunk_Text": chunk_text,
+                "Chunk_Text": chunk_text,
                 "Matched_Categories": unique_categories,
-                # "Embedding": embedding,
+                "Embedding": embedding,
         })
     return output_data
 
@@ -152,7 +161,7 @@ def calculate_accuracy(answer, report_dict):
     total_questions = len(answer)
 
     for key, value in answer.items():
-        if pd.isna(value):
+        if isinstance(value, float) and str(value) == 'nan':
             continue
 
         question_id = key[1:]  # 去掉 'Q' 提取後面的部分
@@ -164,7 +173,8 @@ def calculate_accuracy(answer, report_dict):
                 for category in entry['Matched_Categories']:
                     clean_category = category.replace('#', '')  # 移除井字號
                     matched_categories.append(clean_category.split('_')[-1])  # 取最後的部分
-
+        print(question_id)
+        print(matched_categories)
         if question_id in matched_categories:
             # 第二份資料中有出現此類別
             if value == 1.0:
@@ -182,11 +192,11 @@ def optimize_threshold():
         os.path.join(CHUNK_CSV_DIRECTORY, f) 
         for f in os.listdir(CHUNK_CSV_DIRECTORY) if f.endswith('.csv')
     ]
-    thresholds = np.arange(0.0, 2.01, 0.01)
+    thresholds = np.arange(0.0, 3.01, 0.01)
     # thresholds = np.arange(0.1, 0.2, 0.1)
     accuracy_for_thresholds = []
     for threshold in thresholds:
-        # print(threshold)
+        print(threshold)
         accuracy = 0
         for csv_path in chunk_csv_files:
             print(f"\nProcessing {csv_path}...")
@@ -206,6 +216,13 @@ def optimize_threshold():
 
 def main():
     accuracy_list = optimize_threshold()
+    # 指定輸出檔案名稱
+    output_file = "data/accuracy_list.csv"
+    
+    # 儲存到 CSV 檔案
+    accuracy_list.to_csv(output_file, index=False)
+    
+    print(f"Accuracy list saved to {output_file}.")
     print(accuracy_list)
     
 
