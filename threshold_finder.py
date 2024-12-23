@@ -23,6 +23,21 @@ ALL_RESULTS_PATH_TEMPLATE = r"C:\Users\bugee\OneDrive\桌面\query_result\all_qu
 os.makedirs(OUTPUT_PATH, exist_ok=True)
 os.makedirs(ACCURACY_RESULT_BASE, exist_ok=True)
 
+# 目標欄位
+TARGET_COLUMNS = [
+    'Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7', 'Q8', 'Q9', 'Q10', 
+    'Q11', 'Q12', 'Q13', 'Q14', 'Q15', 'Q16', 'Q17', 'Q18', 'Q19', 
+    'Q20', 'Q21', 'Q22', 'QS1', 'QS2', 'Q23', 'Q24', 'Q25', 'Q26', 
+    'Q27', 'Q28', 'Q29', 'Q30', 'Q31', 'Q32', 'Q33', 'Q34', 'Q35', 
+    'Q36', 'Q37', 'Q38', 'Q39', 'Q40', 'Q41', 'Q42', 'Q43', 'Q44', 
+    'Q45', 'Q46', 'Q47', 'Q48', 'Q49', 'Q50', 'QR1', 'QR2', 'Q51', 
+    'Q52', 'Q53', 'Q54', 'Q55', 'Q56', 'Q57', 'Q58', 'Q59', 'Q60', 
+    'Q61', 'Q62', 'Q63', 'Q64', 'Q65', 'Q66', 'QMT1', 'QMT2', 
+    'QMT3', 'QMT4', 'Q67', 'Q68', 'Q69', 'Q70', 'Q71', 'Q72', 
+    'Q73', 'QMT5', 'Q74', 'Q75', 'Q76', 'Q77', 'Q78', 'Q79', 
+    'Q80', 'Q81', 'Q82'
+]
+
 def map_label_to_q(label: str) -> str:
     last_part = label.split('_')[-1]
     if last_part.startswith("#MT"):
@@ -131,24 +146,28 @@ def calculate_accuracy_for_report(df_all, threshold, rank_file, institution, yea
     
     if ground_truth_df.empty:
         print(f"[WARN] 找不到 {institution} 在 {year} 年的真實標籤。跳過。")
-        return None, None, None, None
+        return None, None, None, None  # 增加一個返回值
+    
+    ground_truth = ground_truth_df.loc[:, TARGET_COLUMNS].iloc[0].to_dict()
 
-    ground_truth = ground_truth_df.loc[:, "Q1":"Q82"].iloc[0].to_dict()
-
-    # 初始化 Q1-Q82 的二進制格式
+    # 初始化二進制格式
     predict_binary = []
     ground_truth_binary = []
+    mismatches = []  # 用於收集不一致的標籤資訊
 
-    for q in [f"Q{i}" for i in range(1, 83)]:
-        ground_truth_value = int(ground_truth[q]) if q in ground_truth and not pd.isna(ground_truth[q]) else 0
+    for q in TARGET_COLUMNS:
+        ground_truth_value = int(ground_truth[q]) if not pd.isna(ground_truth[q]) else 0
         predicted_value = 1 if q in predicted_labels else 0
         ground_truth_binary.append(ground_truth_value)
         predict_binary.append(predicted_value)
+        
+        if ground_truth_value != predicted_value:
+            mismatches.append(f"{q}: predicted {predicted_value}, actual {ground_truth_value}")
 
     # 計算準確率
     accuracy = sum(gt == pred for gt, pred in zip(ground_truth_binary, predict_binary)) / len(ground_truth_binary)
 
-    return accuracy, predict_binary, ground_truth_binary
+    return accuracy, predict_binary, ground_truth_binary, mismatches
 
 def main():
     # 定義六份報告的相關資訊 (報告名稱, 機構, 年份)
@@ -163,6 +182,7 @@ def main():
 
     # 載入所有報告的資料
     all_reports_data = []
+    all_mismatches = []  # 用於收集所有報告的錯誤標籤
     for report_name, institution, year in report_info_list:
         print(f"\n[INFO] 處理報告: {report_name}")
         df_all = get_all_results(report_name, k=50)
@@ -195,10 +215,12 @@ def main():
                 print(f"[WARN] {report_name} 的數據為空，跳過此報告的準確率計算。")
                 continue
 
-            acc, _, _ = calculate_accuracy_for_report(df_all, threshold, RANK_PATH, institution, year, report_name)
+            acc, _, _, mismatches = calculate_accuracy_for_report(df_all, threshold, RANK_PATH, institution, year, report_name)
             if acc is not None:
                 accuracies.append(acc)
                 print(f"[INFO] {report_name}: 閾值 {threshold} 下的準確率 = {acc:.2%}")
+                if mismatches:
+                    all_mismatches.extend(mismatches)
             else:
                 print(f"[WARN] {report_name}: 無法計算準確率，跳過。")
 
@@ -221,6 +243,8 @@ def main():
 
     # 使用最佳閾值計算並保存每份報告的準確率及預測標籤和真實標籤
     summary_results = []
+    # 重置 all_mismatches 以收集最佳閾值下的錯誤標籤
+    all_mismatches = []
     for report_data in all_reports_data:
         report_name = report_data["report_name"]
         institution = report_data["institution"]
@@ -231,7 +255,7 @@ def main():
             print(f"[WARN] {report_name} 的數據為空，跳過此報告的準確率計算。")
             continue
 
-        acc, predict_binary, ground_truth_binary = calculate_accuracy_for_report(
+        acc, predict_binary, ground_truth_binary, mismatches = calculate_accuracy_for_report(
             df_all, best_threshold, RANK_PATH, institution, year, report_name
         )
         if acc is not None:
@@ -242,14 +266,46 @@ def main():
                 "best_threshold": best_threshold,
                 "accuracy_at_best_threshold": acc,
                 "PREDICT": ','.join(map(str, predict_binary)),
-                "GROUND_TRUTH": ','.join(map(str, ground_truth_binary))
+                "GROUND_TRUTH": ','.join(map(str, ground_truth_binary)),
+                "mismatches": '; '.join(mismatches)
             })
             print(f"[INFO] {report_name}: 在最佳閾值 {best_threshold} 下的準確率 = {acc:.2%}")
+            if mismatches:
+                all_mismatches.extend(mismatches)
         else:
             print(f"[WARN] {report_name}: 無法計算準確率，跳過總結。")
 
     if summary_results:
         summary_df = pd.DataFrame(summary_results)
+        
+        # 生成錯誤標籤的統計
+        mismatch_counts = {}
+        for mismatch in all_mismatches:
+            label = mismatch.split(':')[0].strip()  # 提取標籤名稱，如 'Q10'
+            if label in mismatch_counts:
+                mismatch_counts[label] += 1
+            else:
+                mismatch_counts[label] = 1
+        
+        # 將統計結果轉換為字符串，並按錯誤次數排序
+        sorted_mismatches = sorted(mismatch_counts.items(), key=lambda item: item[1], reverse=True)
+        mismatch_summary = '; '.join([f"{label} 錯誤 {count} 次" for label, count in sorted_mismatches])
+        
+        # 創建一個新的 DataFrame 用於錯誤標籤統計
+        mismatch_df = pd.DataFrame([{
+            "report_name": "Most Mismatches",
+            "institution": "",
+            "year": "",
+            "best_threshold": "",
+            "accuracy_at_best_threshold": "",
+            "PREDICT": "",
+            "GROUND_TRUTH": "",
+            "mismatches": mismatch_summary
+        }])
+        
+        # 將統計結果追加到 summary_df
+        summary_df = pd.concat([summary_df, mismatch_df], ignore_index=True)
+        
         summary_path = os.path.join(ACCURACY_RESULT_BASE, "summary_of_all_reports_best_threshold.csv")
         summary_df.to_csv(summary_path, index=False, encoding="utf-8-sig")
         print(f"[INFO] 含最佳閾值及預測標籤和真實標籤的總結已保存至: {summary_path}")
