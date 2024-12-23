@@ -192,7 +192,7 @@ def optimize_threshold():
         os.path.join(CHUNK_CSV_DIRECTORY, f) 
         for f in os.listdir(CHUNK_CSV_DIRECTORY) if f.endswith('.csv')
     ]
-    thresholds = np.arange(0.0, 3.01, 0.01)
+    thresholds = np.arange(0.12, 0.1401, 0.0001)
     # thresholds = np.arange(0.1, 0.2, 0.1)
     accuracy_for_thresholds = []
     for threshold in thresholds:

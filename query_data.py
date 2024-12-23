@@ -31,7 +31,7 @@ def query_chroma_for_similar_chunks(embedding):
     results = db.similarity_search_by_vector_with_relevance_scores(embedding, k=47)
     filtered_results = [
         {"類別": doc[0].metadata['類別'], "content": doc[0].page_content, "cosine_distance": doc[1]}
-        for doc in results if doc[1] <= 0.2
+        for doc in results if doc[1] <= 0.1289
     ]
     return filtered_results
 
