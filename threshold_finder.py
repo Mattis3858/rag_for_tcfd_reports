@@ -172,12 +172,12 @@ def calculate_accuracy_for_report(df_all, threshold, rank_file, institution, yea
 def main():
     # 定義六份報告的相關資訊 (報告名稱, 機構, 年份)
     report_info_list = [
+        ("6031_連線銀行_2022_TCFD_報告書", "連線銀行", 2022),
+        ("6039_將來銀行_2022_TCFD_報告書_preprocessed", "將來銀行", 2022),
+        ("2893_新光銀行_2021_TCFD_專章完整永續_preprocessed", "新光銀行", 2021),
         ("富邦金控_2022_TCFD_報告書_preprocessed", "富邦金", 2022),
-        ("新光金控_2022_TCFD_報告書_preprocessed", "新光金", 2022),
-        ("永豐銀行_2022_TCFD_報告書_preprocessed", "永豐銀行", 2022),
-        ("開發金控_2021_TCFD_報告書_preprocesed", "開發金", 2021),
-        ("瑞興銀行_2022_TCFD_報告書", "瑞興銀行", 2022),
-        ("華泰銀行_2022_TCFD_報告書_preprocessed", "華泰銀行", 2022)
+        ("合庫金控_2022_TCFD_報告書_preprocessed", "合庫金", 2022),
+        ("永豐金控_2022_TCFD_報告書_preprocessed", "永豐金", 2022)
     ]
 
     # 載入所有報告的資料
