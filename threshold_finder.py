@@ -4,7 +4,12 @@ import psutil
 import pandas as pd
 from dotenv import load_dotenv
 from langchain_community.embeddings import OpenAIEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma  # 更新導入方式
+import matplotlib.pyplot as plt  # 繪圖庫
+
+# 全局字型設置（可選，避免繪圖時出現中文字符缺失）
+plt.rcParams['font.sans-serif'] = ['Microsoft YaHei']  # 設置支持 CJK 的字型
+plt.rcParams['axes.unicode_minus'] = False  # 避免負號顯示問題
 
 # 載入環境變數
 load_dotenv()
@@ -91,7 +96,7 @@ def get_all_results(report_name, k=50):
     print(f"[INFO] 開始檢索 {report_name} 的所有結果：{total_docs} 個文件 (k={k})")
 
     start_time = time.time()
-    log_interval = 10  # 每處理 10 個文件打印一次進度
+    log_interval = 100  # 每處理 100 個文件打印一次進度
 
     for i, (text, original_label) in enumerate(documents, start=1):
         mapped_label = map_label_to_q(original_label)
@@ -172,12 +177,12 @@ def calculate_accuracy_for_report(df_all, threshold, rank_file, institution, yea
 def main():
     # 定義六份報告的相關資訊 (報告名稱, 機構, 年份)
     report_info_list = [
-        ("6031_連線銀行_2022_TCFD_報告書", "連線銀行", 2022),
-        ("6039_將來銀行_2022_TCFD_報告書_preprocessed", "將來銀行", 2022),
-        ("2893_新光銀行_2021_TCFD_專章完整永續_preprocessed", "新光銀行", 2021),
+        ("瑞興銀行_2022_TCFD_報告書", "瑞興銀行", 2022),
+        ("新光金控_2022_TCFD_報告書_preprocessed", "新光金", 2022),
+        ("永豐銀行_2022_TCFD_報告書_preprocessed", "永豐銀行", 2022),
         ("富邦金控_2022_TCFD_報告書_preprocessed", "富邦金", 2022),
-        ("合庫金控_2022_TCFD_報告書_preprocessed", "合庫金", 2022),
-        ("永豐金控_2022_TCFD_報告書_preprocessed", "永豐金", 2022)
+        ("開發金控_2021_TCFD_報告書_preprocesed", "開發金", 2021),
+        ("華泰銀行_2022_TCFD_報告書_preprocessed", "華泰銀行", 2022)
     ]
 
     # 載入所有報告的資料
@@ -195,16 +200,18 @@ def main():
             "df_all": df_all
         })
 
-    # 定義以 0.01 為增量的閾值
-    thresholds = [x / 100 for x in range(75, 96, 1)]  # 0.75, 0.76, ... 0.95
+    # 定義以 0.0001 為增量的閾值，從 0.75 開始
+    thresholds = [x / 10000 for x in range(7500, 10001, 1)]  # 0.7500, 0.7501, ..., 1.0000
     best_threshold = None
     best_average_accuracy = -1.0
+    thresholds_list = []  # 用於繪圖
+    average_accuracies_list = []  # 用於繪圖
 
     print("\n[INFO] 開始閾值優化...")
 
-    for threshold in thresholds:
+    total_thresholds = len(thresholds)
+    for idx, threshold in enumerate(thresholds, start=1):
         accuracies = []
-        print(f"\n[INFO] 測試閾值: {threshold}")
         for report_data in all_reports_data:
             report_name = report_data["report_name"]
             institution = report_data["institution"]
@@ -212,34 +219,59 @@ def main():
             df_all = report_data["df_all"]
 
             if df_all.empty:
-                print(f"[WARN] {report_name} 的數據為空，跳過此報告的準確率計算。")
                 continue
 
             acc, _, _, mismatches = calculate_accuracy_for_report(df_all, threshold, RANK_PATH, institution, year, report_name)
             if acc is not None:
                 accuracies.append(acc)
-                print(f"[INFO] {report_name}: 閾值 {threshold} 下的準確率 = {acc:.2%}")
                 if mismatches:
                     all_mismatches.extend(mismatches)
-            else:
-                print(f"[WARN] {report_name}: 無法計算準確率，跳過。")
 
         if not accuracies:
-            print("[ERROR] 此閾值下沒有計算出任何準確率。跳過此閾值。")
             continue
 
         avg_acc = sum(accuracies) / len(accuracies)
-        print(f"[INFO] 閾值: {threshold}, 平均準確率: {avg_acc:.2%}")
+        thresholds_list.append(threshold)
+        average_accuracies_list.append(avg_acc)
 
         if avg_acc > best_average_accuracy:
             best_average_accuracy = avg_acc
             best_threshold = threshold
 
+        # 每處理 100 個閾值打印一次進度
+        if idx % 100 == 0 or idx == total_thresholds:
+            progress = (idx / total_thresholds) * 100
+            print(f"[INFO] 閾值優化進度: {idx}/{total_thresholds} ({progress:.2f}%) 完成")
+            print(f"[INFO] 當前閾值: {threshold:.4f}, 當前平均準確率: {avg_acc:.2%}")
+
     if best_threshold is None:
         print("[ERROR] 沒有找到有效的閾值。結束程式。")
         return
 
-    print(f"\n[INFO] 所有六份報告的最佳閾值: {best_threshold}, 平均準確率: {best_average_accuracy:.2%}")
+    print(f"\n[INFO] 所有六份報告的最佳閾值: {best_threshold:.4f}, 平均準確率: {best_average_accuracy:.2%}")
+
+    # 保存閾值與平均準確率到 CSV
+    df_threshold = pd.DataFrame({
+        'threshold': thresholds_list,
+        'average_accuracy': average_accuracies_list
+    })
+    threshold_accuracy_path = os.path.join(ACCURACY_RESULT_BASE, "thresholds_accuracy.csv")
+    df_threshold.to_csv(threshold_accuracy_path, index=False, encoding='utf-8-sig')
+    print(f"[INFO] 閾值與平均準確率已保存至: {threshold_accuracy_path}")
+
+    # 繪製平均準確率與閾值的趨勢圖
+    plt.figure(figsize=(10, 6))
+    plt.plot(thresholds_list, [acc * 100 for acc in average_accuracies_list], label='平均準確率', color='blue')
+    plt.xlabel('閾值')
+    plt.ylabel('平均準確率 (%)')
+    plt.title('平均準確率與閾值的趨勢圖')
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plot_path = os.path.join(ACCURACY_RESULT_BASE, "accuracy_vs_threshold.png")
+    plt.savefig(plot_path)
+    plt.close()
+    print(f"[INFO] 趨勢圖已保存至: {plot_path}")
 
     # 使用最佳閾值計算並保存每份報告的準確率及預測標籤和真實標籤
     summary_results = []
@@ -269,7 +301,7 @@ def main():
                 "GROUND_TRUTH": ','.join(map(str, ground_truth_binary)),
                 "mismatches": '; '.join(mismatches)
             })
-            print(f"[INFO] {report_name}: 在最佳閾值 {best_threshold} 下的準確率 = {acc:.2%}")
+            print(f"[INFO] {report_name}: 在最佳閾值 {best_threshold:.4f} 下的準確率 = {acc:.2%}")
             if mismatches:
                 all_mismatches.extend(mismatches)
         else:
