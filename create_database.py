@@ -25,6 +25,7 @@ openai.api_key = os.environ['OPENAI_API_KEY']
 
 
 CHROMA_PATH = "chroma"
+
 EXCEL_PATH = "data/tcfd第四層接露指引 - 加上第一層指標及關鍵字.xlsx"
 
 
