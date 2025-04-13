@@ -8,3 +8,4 @@ chroma_*
 /myenv
 chroma
 __pycache__
+.qodo
